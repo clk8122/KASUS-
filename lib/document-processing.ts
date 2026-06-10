@@ -1,4 +1,12 @@
-import { allowedUploadMimeTypes, maxUploadSizeMb } from "./mock-data";
+const allowedUploadMimeTypes = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/heic",
+  "image/heif"
+];
+
+const maxUploadSizeMb = 20;
 
 export type UploadValidation = {
   ok: boolean;
@@ -24,14 +32,4 @@ export function validateUploadFile(file: File): UploadValidation {
   }
 
   return { ok: true, message: sanitizeFileName(file.name) };
-}
-
-export async function mockOrganizeRentalFile() {
-  // TODO production: brancher OCR, conversion image vers PDF, classification documentaire,
-  // stockage prive, RLS Supabase, generation ZIP/PDF et journalisation sans donnees sensibles.
-  return {
-    status: "Pre-analyse disponible",
-    summary: "Pieces organisees en mode demonstration. Analyse humaine requise.",
-    indicator: "Indicateur interne d'aide a la lecture, non decisionnel."
-  };
 }

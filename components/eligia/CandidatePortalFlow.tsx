@@ -38,7 +38,7 @@ function formatAnalysisTime(seconds: number) {
 }
 
 function storageKey(id: string) {
-  return `eligia-candidate-portal-${id || "demo"}`;
+  return `eligia-candidate-portal-${id || "pending"}`;
 }
 
 function defaultState(dossier: EligiaMvpDossier | null): StoredCandidateState {
@@ -74,7 +74,7 @@ function createPeople(applicants: RentalApplicant[]): EligiaMvpPerson[] {
 
 export function CandidatePortalFlow() {
   const params = useSearchParams();
-  const dossierId = params.get("dossier") ?? "demo-link";
+  const dossierId = params.get("dossier") ?? "pending";
   const [agencyName] = useState(() => {
     if (typeof window === "undefined") return defaultAccountState.agencyName;
     try {

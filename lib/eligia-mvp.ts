@@ -80,8 +80,8 @@ export type EligiaMvpDossier = {
 export const eligiaDossiersStorageKey = "eligia-created-dossiers";
 
 export function buildCandidateLink(id: string) {
-  if (typeof window === "undefined") return `http://localhost:3000/candidat/demo-link?dossier=${id}`;
-  return `${window.location.origin}/candidat/demo-link?dossier=${id}`;
+  if (typeof window === "undefined") return `/candidat/lien?dossier=${id}`;
+  return `${window.location.origin}/candidat/lien?dossier=${id}`;
 }
 
 export function readEligiaDossiers(): EligiaMvpDossier[] {

@@ -1,84 +1,274 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  ACCOUNT_STORAGE_KEY,
-  AccountState,
-  TeamMember,
-  defaultAccountState,
-  getSeatSummary
-} from "@/lib/account-store";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { getSeatSummary, type AccountState, defaultAccountState, type TeamMember } from "@/lib/account-store";
+import { getSupabaseBrowser, hasBrowserSupabaseConfig } from "@/lib/supabase/browser";
 
-function readStoredAccount(): AccountState {
-  if (typeof window === "undefined") {
-    return defaultAccountState;
-  }
+type SessionResponse = {
+  authenticated: boolean;
+  hasSubscription?: boolean;
+  organization?: {
+    id: string;
+    name: string;
+    address: string;
+    legal_name: string;
+    legal_email: string;
+    signature: string;
+    logo_url: string;
+    included_seats: number;
+    extra_seat_price_eur: number;
+  } | null;
+  profile?: {
+    id: string;
+    organization_id: string | null;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+  } | null;
+  subscriptions?: Array<{ module_key: string; status: string; current_period_end: string | null }>;
+  members?: Array<{ id: string; display_name: string; invited_email: string | null; role: string }>;
+};
 
-  const stored = window.localStorage.getItem(ACCOUNT_STORAGE_KEY);
-  if (!stored) {
-    return defaultAccountState;
-  }
+type ModuleKey = "eligia" | "studio";
 
-  try {
-    return { ...defaultAccountState, ...JSON.parse(stored) } as AccountState;
-  } catch {
-    return defaultAccountState;
-  }
+function getAuthHeaders(token: string) {
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  };
+}
+
+function mapRole(role: string): TeamMember["role"] {
+  if (role === "owner") return "Administrateur";
+  if (role === "admin") return "Administrateur";
+  if (role === "readonly") return "Lecture seule";
+  return "Collaborateur";
+}
+
+function buildAccount(remote: SessionResponse): AccountState {
+  const organization = remote.organization ?? null;
+  const profile = remote.profile ?? null;
+  const members = remote.members ?? [];
+
+  return {
+    firstName: profile?.first_name ?? "",
+    lastName: profile?.last_name ?? "",
+    email: profile?.email ?? "",
+    phone: profile?.phone ?? "",
+    agencyName: organization?.name ?? "",
+    agencyAddress: organization?.address ?? "",
+    agencyLogo: organization?.logo_url ?? "",
+    legalName: organization?.legal_name ?? "",
+    legalEmail: organization?.legal_email ?? "",
+    signature: organization?.signature ?? "",
+    planName: remote.hasSubscription ? "Actif" : "Sans abonnement",
+    includedSeats: organization?.included_seats ?? 3,
+    extraSeatPrice: organization?.extra_seat_price_eur ?? 99,
+    team: members.map((member) => ({
+      id: member.id,
+      name: member.display_name || member.invited_email || "Membre",
+      email: member.invited_email || profile?.email || "",
+      role: mapRole(member.role)
+    }))
+  };
 }
 
 export function useAccount() {
-  const [account, setAccount] = useState<AccountState>(() => readStoredAccount());
+  const browserConfig = hasBrowserSupabaseConfig();
+  const supabase = useMemo(() => getSupabaseBrowser(), []);
+  const [account, setAccount] = useState<AccountState>(defaultAccountState);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false);
+  const [activeModules, setActiveModules] = useState<ModuleKey[]>([]);
+  const [loading, setLoading] = useState(browserConfig);
+  const [sessionToken, setSessionToken] = useState("");
+
+  const loadAccount = useCallback(async (token?: string) => {
+    const accessToken = token || sessionToken;
+    if (!accessToken) {
+      setAuthenticated(false);
+      setHasSubscription(false);
+      setActiveModules([]);
+      setAccount(defaultAccountState);
+      setLoading(false);
+      return;
+    }
+
+    const response = await fetch("/api/account/session", {
+      headers: getAuthHeaders(accessToken)
+    });
+    const payload = (await response.json()) as SessionResponse;
+    const nextAccount = buildAccount(payload);
+    setAccount(nextAccount);
+    setAuthenticated(Boolean(payload.authenticated));
+    const modules = (payload.subscriptions ?? []).filter((subscription) => subscription.status === "active").map((subscription) => subscription.module_key as ModuleKey);
+    setActiveModules(modules);
+    setHasSubscription(Boolean(payload.hasSubscription));
+    setLoading(false);
+  }, [sessionToken]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify(account));
+    if (!supabase) return;
+
+    let mounted = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      const token = data.session?.access_token ?? "";
+      setSessionToken(token);
+      void loadAccount(token);
+    });
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const token = session?.access_token ?? "";
+      setSessionToken(token);
+      void loadAccount(token);
+    });
+
+    return () => {
+      mounted = false;
+      data.subscription.unsubscribe();
+    };
+  }, [loadAccount, supabase]);
+
+  async function refresh() {
+    if (!supabase) {
+      await loadAccount();
+      return;
     }
-  }, [account]);
+
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token ?? sessionToken;
+    await loadAccount(token);
+  }
+
+  async function signIn(email: string, password: string) {
+    if (!supabase) return { error: "Supabase non configure." };
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    await refresh();
+    return { error: "" };
+  }
+
+  async function signUp(input: { email: string; password: string; agencyName: string; firstName?: string; lastName?: string }) {
+    if (!supabase) return { error: "Supabase non configure." };
+    const { data, error } = await supabase.auth.signUp({ email: input.email, password: input.password });
+    if (error) return { error: error.message };
+
+    const token = data.session?.access_token ?? "";
+    if (token) {
+      await fetch("/api/account/bootstrap", {
+        method: "POST",
+        headers: getAuthHeaders(token),
+        body: JSON.stringify({
+          agencyName: input.agencyName,
+          firstName: input.firstName ?? "",
+          lastName: input.lastName ?? ""
+        })
+      });
+      await refresh();
+    }
+
+    return { error: "" };
+  }
+
+  async function signOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setAccount(defaultAccountState);
+    setAuthenticated(false);
+    setHasSubscription(false);
+    setActiveModules([]);
+  }
+
+  async function updateAccount(updates: Partial<AccountState>) {
+    if (!sessionToken) return;
+    await fetch("/api/account/update", {
+      method: "PATCH",
+      headers: getAuthHeaders(sessionToken),
+      body: JSON.stringify({
+        profile: {
+          firstName: updates.firstName,
+          lastName: updates.lastName,
+          phone: updates.phone
+        },
+        organization: {
+          name: updates.agencyName,
+          address: updates.agencyAddress,
+          legalName: updates.legalName,
+          legalEmail: updates.legalEmail,
+          signature: updates.signature
+        }
+      })
+    });
+    await refresh();
+  }
+
+  async function updateLogo(logoDataUrl: string) {
+    if (!sessionToken) return;
+    await fetch("/api/account/update", {
+      method: "PATCH",
+      headers: getAuthHeaders(sessionToken),
+      body: JSON.stringify({
+        organization: {
+          logoDataUrl
+        }
+      })
+    });
+    await refresh();
+    setAccount((current) => ({ ...current, agencyLogo: logoDataUrl }));
+  }
+
+  async function startCheckout(moduleKey: ModuleKey) {
+    if (!sessionToken) return { error: "Connexion requise." };
+    const response = await fetch("/api/billing/checkout", {
+      method: "POST",
+      headers: getAuthHeaders(sessionToken),
+      body: JSON.stringify({ moduleKey })
+    });
+    const payload = await response.json();
+    if (payload.url) {
+      window.location.href = payload.url;
+    }
+    return payload;
+  }
+
+  function hasAccessTo(moduleKey: ModuleKey) {
+    return activeModules.includes(moduleKey);
+  }
 
   const seatSummary = useMemo(() => getSeatSummary(account), [account]);
 
-  function updateAccount(updates: Partial<AccountState>) {
-    setAccount((current) => ({ ...current, ...updates }));
+  function addTeamMember() {
+    return;
   }
 
-  function addTeamMember(member: Omit<TeamMember, "id">) {
-    setAccount((current) => ({
-      ...current,
-      team: [
-        ...current.team,
-        {
-          ...member,
-          id: `seat-${Date.now()}`
-        }
-      ]
-    }));
+  function updateTeamMember() {
+    return;
   }
 
-  function updateTeamMember(id: string, updates: Partial<TeamMember>) {
-    setAccount((current) => ({
-      ...current,
-      team: current.team.map((member) => (member.id === id ? { ...member, ...updates } : member))
-    }));
-  }
-
-  function removeTeamMember(id: string) {
-    setAccount((current) => ({
-      ...current,
-      team: current.team.filter((member) => member.id !== id || member.role === "Administrateur")
-    }));
-  }
-
-  function resetAccount() {
-    setAccount(defaultAccountState);
+  function removeTeamMember() {
+    return;
   }
 
   return {
     account,
     addTeamMember,
+    authenticated,
+    hasAccessTo,
+    hasSubscription,
+    loading,
+    refresh,
     removeTeamMember,
-    resetAccount,
     seatSummary,
+    sessionToken,
+    signIn,
+    signOut,
+    signUp,
+    startCheckout,
     updateAccount,
-    updateTeamMember
+    updateLogo,
+    updateTeamMember,
+    activeModules
   };
 }

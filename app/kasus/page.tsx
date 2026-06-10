@@ -1,13 +1,10 @@
+import { AccessGate } from "@/components/auth/AccessGate";
 import { KasusDashboardClient } from "@/components/account/KasusDashboardClient";
-import { TopBar } from "@/components/layout/TopBar";
 
 export default function KasusDashboardPage() {
   return (
-    <main className="page">
-      <div className="shell">
-        <TopBar />
-        <KasusDashboardClient />
-      </div>
-    </main>
+    <AccessGate title="KASUS" subtitle="Accès réservé aux comptes abonnés." requiredModule="any">
+      <KasusDashboardClient />
+    </AccessGate>
   );
 }

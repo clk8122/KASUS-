@@ -1,13 +1,5 @@
-import { MvpDossierDetail } from "@/components/eligia/MvpDossierDetail";
-import { TopBar } from "@/components/layout/TopBar";
+import { redirect } from "next/navigation";
 
-export default function DossierDetailPage() {
-  return (
-    <main className="page">
-      <div className="shell">
-        <TopBar backHref="/eligia/dossiers" smallKasus notifications eligiaProfile />
-        <MvpDossierDetail id="demo-dossier" />
-      </div>
-    </main>
-  );
+export default function DemoDossierRedirectPage() {
+  redirect("/eligia/dossiers");
 }

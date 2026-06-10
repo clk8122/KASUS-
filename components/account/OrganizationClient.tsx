@@ -1,9 +1,30 @@
 "use client";
 
+import Image from "next/image";
 import { useAccount } from "@/lib/use-account";
+import { useRef, useState } from "react";
 
 export function OrganizationClient() {
-  const { account, updateAccount } = useAccount();
+  const { account, updateAccount, updateLogo } = useAccount();
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  async function handleLogoChange(file: File | null) {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(String(reader.result ?? ""));
+        reader.onerror = () => reject(new Error("Lecture du fichier impossible."));
+        reader.readAsDataURL(file);
+      });
+      await updateLogo(dataUrl);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
 
   return (
     <section className="profile-page">
@@ -52,17 +73,25 @@ export function OrganizationClient() {
             <div className="panel-heading">
               <div>
                 <h2>Logo et signature</h2>
-                <p>Ajoutez une URL de logo et une signature agence pour les futurs exports.</p>
+                <p>Ajoutez une photo de logo et une signature agence pour les futurs exports.</p>
               </div>
             </div>
             <label className="field">
-              URL du logo
-              <input className="input" placeholder="https://..." value={account.agencyLogo} onChange={(event) => updateAccount({ agencyLogo: event.target.value })} />
+              Photo du logo
+              <input
+                accept="image/*"
+                className="input"
+                ref={fileInputRef}
+                type="file"
+                onChange={(event) => void handleLogoChange(event.target.files?.[0] ?? null)}
+              />
             </label>
+            {account.agencyLogo ? <Image alt="Logo de l'agence" className="logo-preview" height={160} unoptimized width={420} src={account.agencyLogo} /> : null}
             <label className="field">
               Signature agence
               <textarea className="input textarea" value={account.signature} onChange={(event) => updateAccount({ signature: event.target.value })} />
             </label>
+            {uploading ? <p className="microcopy">Envoi du logo en cours...</p> : null}
           </section>
         </div>
       </div>

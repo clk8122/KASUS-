@@ -1,5 +1,4 @@
 import { ChevronLeft } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { NotificationsButton } from "./NotificationsButton";
 import { ProfileMenu } from "./ProfileMenu";
@@ -22,7 +21,7 @@ export function TopBar({ backHref, smallKasus, notifications, eligiaProfile }: T
         ) : null}
         {smallKasus ? (
           <Link aria-label="Retour au menu KASUS" className="topbar-kasus" href="/kasus">
-            <Image alt="KASUS" height={24} src="/kasus-logo-crop.png" width={92} />
+            <span className="brand-wordmark brand-wordmark-small">KASUS</span>
           </Link>
         ) : null}
       </div>

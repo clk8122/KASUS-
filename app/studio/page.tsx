@@ -1,18 +1,18 @@
+import { AccessGate } from "@/components/auth/AccessGate";
 import { TopBar } from "@/components/layout/TopBar";
 
 export default function StudioPage() {
   return (
-    <main className="page">
-      <div className="shell">
-        <TopBar smallKasus />
-        <section className="hero-center">
-          <div className="center-stack">
-            <span className="badge">En cours de creation</span>
-            <h1 className="title-lg">STUDIO</h1>
-            <p className="subtitle">Le module STUDIO permettra de transformer les informations d'un bien en annonce immobiliere claire, professionnelle et prete a publier.</p>
-          </div>
-        </section>
-      </div>
-    </main>
+    <AccessGate requiredModule="studio" title="KASUS" subtitle="Module STUDIO réservé aux abonnés.">
+      <main className="page">
+        <div className="shell">
+          <TopBar backHref="/kasus" />
+          <section className="empty-state glass">
+            <h1>STUDIO</h1>
+            <p>Le module est en cours de mise en production. Son accès sera débloqué après abonnement.</p>
+          </section>
+        </div>
+      </main>
+    </AccessGate>
   );
 }

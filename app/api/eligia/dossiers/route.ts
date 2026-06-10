@@ -1,9 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
 import { RentalDossier, buildLocalAnalysis } from "@/lib/rental-flow";
+import { requireAuthContext } from "@/lib/auth-server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { readJsonBody, requireBearerToken, sanitizePositiveNumber, sanitizeText } from "@/lib/security";
+import { readJsonBody, sanitizePositiveNumber, sanitizeText } from "@/lib/security";
+
+async function getOrganizationAccess(request: NextRequest) {
+  const context = await requireAuthContext(request);
+  if (!context) return null;
+
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return null;
+
+  const { data: profile } = await supabase.from("profiles").select("organization_id").eq("id", context.userId).maybeSingle();
+  if (!profile?.organization_id) return null;
+
+  const { data: subscriptions } = await supabase
+    .from("organization_subscriptions")
+    .select("module_key, status")
+    .eq("organization_id", profile.organization_id)
+    .eq("module_key", "eligia");
+
+  const allowed = subscriptions?.some((subscription) => subscription.status === "active");
+  if (!allowed) return null;
+
+  return { context, supabase, organizationId: profile.organization_id };
+}
+
+export async function GET(request: NextRequest) {
+  const access = await getOrganizationAccess(request);
+  if (!access) {
+    return NextResponse.json({ error: "Acces refuse." }, { status: 403 });
+  }
+
+  const { data, error } = await access.supabase
+    .from("dossiers")
+    .select("id, address, rent, status, completeness, solvency_score, solvency_label, summary, created_at, updated_at")
+    .eq("organization_id", access.organizationId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ dossiers: data ?? [] });
+}
 
 export async function POST(request: NextRequest) {
+  const access = await getOrganizationAccess(request);
+  if (!access) {
+    return NextResponse.json({ error: "Acces refuse." }, { status: 403 });
+  }
+
   const { data: rawDossier, response } = await readJsonBody<RentalDossier>(request);
   if (response) return response;
   if (!rawDossier) return NextResponse.json({ error: "Dossier invalide" }, { status: 400 });
@@ -15,32 +62,14 @@ export async function POST(request: NextRequest) {
     applicants: Array.isArray(rawDossier.applicants) ? rawDossier.applicants.slice(0, 12) : []
   };
   const analysis = buildLocalAnalysis(dossier);
-  const supabase = getSupabaseAdmin();
 
-  if (!supabase || process.env.ENABLE_SUPABASE_API_WRITES !== "true") {
-    return NextResponse.json({
-      id: `local-${Date.now()}`,
-      mode: "local",
-      analysis,
-      warning: supabase ? "Ecriture Supabase desactivee tant que l'authentification serveur n'est pas branchee." : undefined
-    });
-  }
-
-  const authError = requireBearerToken(request, process.env.KASUS_API_TOKEN);
-  if (authError) return authError;
-
-  const organizationId = request.headers.get("x-organization-id");
-  if (!organizationId) {
-    return NextResponse.json({ error: "Missing organization id" }, { status: 400 });
-  }
-
-  const { data: createdDossier, error } = await supabase
+  const { data: createdDossier, error } = await access.supabase
     .from("dossiers")
     .insert({
-      organization_id: organizationId,
+      organization_id: access.organizationId,
       address: dossier.address,
       rent: dossier.rent,
-      status: "Pre-analyse disponible",
+      status: "Analyse disponible",
       completeness: Math.min(
         100,
         Math.round(
@@ -61,7 +90,7 @@ export async function POST(request: NextRequest) {
   }
 
   for (const applicant of dossier.applicants) {
-    await supabase.from("applicants").insert({
+    await access.supabase.from("applicants").insert({
       dossier_id: createdDossier.id,
       first_name: applicant.firstName,
       last_name: applicant.lastName,

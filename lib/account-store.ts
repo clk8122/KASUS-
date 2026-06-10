@@ -27,39 +27,20 @@ export type AccountState = {
 export const ACCOUNT_STORAGE_KEY = "kasus-account-state";
 
 export const defaultAccountState: AccountState = {
-  firstName: "Jean",
-  lastName: "Dupont",
-  email: "jean@agencedupont.fr",
-  phone: "06 12 34 56 78",
-  agencyName: "Agence Dupont Immobilier",
-  agencyAddress: "12 avenue Victor Hugo, Paris",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  agencyName: "",
+  agencyAddress: "",
   agencyLogo: "",
-  legalName: "Agence Dupont Immobilier SAS",
-  legalEmail: "contact@agencedupont.fr",
-  signature: "Agence Dupont Immobilier - Votre partenaire location",
-  planName: "Pro",
+  legalName: "",
+  legalEmail: "",
+  signature: "",
+  planName: "Sans abonnement",
   includedSeats: 3,
-  extraSeatPrice: 19,
-  team: [
-    {
-      id: "admin-1",
-      name: "Jean Dupont",
-      email: "jean@agencedupont.fr",
-      role: "Administrateur"
-    },
-    {
-      id: "seat-1",
-      name: "Camille Martin",
-      email: "camille@agencedupont.fr",
-      role: "Collaborateur"
-    },
-    {
-      id: "seat-2",
-      name: "Thomas Leroy",
-      email: "thomas@agencedupont.fr",
-      role: "Collaborateur"
-    }
-  ]
+  extraSeatPrice: 99,
+  team: []
 };
 
 export function getSeatSummary(account: AccountState) {
@@ -68,7 +49,7 @@ export function getSeatSummary(account: AccountState) {
   const monthlySeatTotal = paidSeats * account.extraSeatPrice;
 
   return {
-    freeSeatsLabel: "1 administrateur + 2 seats supplementaires gratuits",
+    freeSeatsLabel: account.team.length ? "Seats inclus selon le plan de l'organisation" : "Aucune equipe configuree",
     includedSeats: account.includedSeats,
     monthlySeatTotal,
     paidSeats,

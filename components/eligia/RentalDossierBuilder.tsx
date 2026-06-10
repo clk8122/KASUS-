@@ -164,24 +164,19 @@ export function RentalDossierBuilder({ mode }: RentalDossierBuilderProps) {
   }
 
   async function saveDossier() {
-    const currentAnalysis = analysis ?? localPreview;
-    await fetch("/api/eligia/dossiers", {
+    const response = await fetch("/api/eligia/dossiers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dossier)
-    }).catch(() => null);
-    const existing = JSON.parse(window.localStorage.getItem("eligia-created-dossiers") ?? "[]") as Array<Record<string, unknown>>;
-    const entry = {
-      id: `created-${Date.now()}`,
-      address: dossier.address,
-      candidates: dossier.applicants.map(applicantFullName).join(", "),
-      rent: dossier.rent,
-      status: publicPortal ? "Dossier candidat transmis" : "Dossier créé par l'agence",
-      completeness: Math.min(100, Math.round((dossier.applicants.reduce((sum, applicant) => sum + applicant.documents.length, 0) / Math.max(1, dossier.applicants.length * 4)) * 100)),
-      indicator: currentAnalysis.solvencyLabel,
-      link: "http://localhost:3000/candidat/demo-link"
-    };
-    window.localStorage.setItem("eligia-created-dossiers", JSON.stringify([entry, ...existing]));
+    });
+    if (!response.ok) {
+      return;
+    }
+    const payload = (await response.json()) as { id?: string };
+    if (payload.id) {
+      window.location.href = `/eligia/dossiers/${payload.id}`;
+      return;
+    }
     setSaved(true);
   }
 

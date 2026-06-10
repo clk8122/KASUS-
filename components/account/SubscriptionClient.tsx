@@ -1,72 +1,78 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useAccount } from "@/lib/use-account";
 
-export function SubscriptionClient() {
-  const { account, seatSummary } = useAccount();
-  const [billingMessage, setBillingMessage] = useState("");
+const modules = [
+  {
+    key: "eligia" as const,
+    title: "ELIGIA",
+    description: "Gestion locative, dossiers candidats et analyse documentaire.",
+    price: 99
+  },
+  {
+    key: "studio" as const,
+    title: "STUDIO",
+    description: "Création d'annonces immobilières et contenus professionnels.",
+    price: 99
+  }
+];
 
-  async function openCheckout() {
-    const response = await fetch("/api/billing/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paidSeats: Math.max(1, seatSummary.paidSeats) })
-    });
-    const payload = await response.json();
-    if (payload.url) {
-      window.location.href = payload.url;
-      return;
+export function SubscriptionClient() {
+  const { activeModules, account, hasSubscription, signOut, startCheckout } = useAccount();
+  const [message, setMessage] = useState("");
+  const [loadingModule, setLoadingModule] = useState<"eligia" | "studio" | "">("");
+
+  async function buy(moduleKey: "eligia" | "studio") {
+    setLoadingModule(moduleKey);
+    setMessage("");
+    const payload = await startCheckout(moduleKey);
+    if (payload?.error) {
+      setMessage(payload.error);
     }
-    setBillingMessage(payload.message ?? "Stripe n'est pas encore configure.");
+    setLoadingModule("");
   }
 
   return (
     <section className="profile-page">
       <div className="profile-heading">
         <p className="eyebrow">Abonnement</p>
-        <h1>Plan {account.planName}</h1>
+        <h1>Modules et accès</h1>
+        <p className="modules-subtitle">Chaque module est facturé 99 EUR / mois. Sans module actif, aucun espace produit n'est accessible.</p>
       </div>
-      <div className="billing-grid">
-        <section className="glass panel profile-panel billing-hero">
-          <h2>Seats inclus</h2>
-          <strong>{seatSummary.includedSeats}</strong>
-          <p>{seatSummary.freeSeatsLabel}.</p>
-        </section>
-        <section className="glass panel profile-panel billing-hero">
-          <h2>Seats payants</h2>
-          <strong>{seatSummary.paidSeats}</strong>
-          <p>{account.extraSeatPrice} EUR / mois par seat supplementaire.</p>
-        </section>
-        <section className="glass panel profile-panel billing-hero">
-          <h2>Total seats supplementaires</h2>
-          <strong>{seatSummary.monthlySeatTotal} EUR</strong>
-          <p>Montant mensuel estime selon l'equipe actuelle.</p>
-        </section>
+
+      <div className="billing-grid billing-grid-modules">
+        {modules.map((module) => {
+          const active = activeModules.includes(module.key);
+          return (
+            <section className="glass panel profile-panel billing-hero" key={module.key}>
+              <h2>{module.title}</h2>
+              <strong>{module.price} EUR</strong>
+              <p>{module.description}</p>
+              <p className={active ? "success-text" : "muted"}>{active ? "Actif" : "Non souscrit"}</p>
+              {!active ? (
+                <button className="btn btn-primary btn-compact" disabled={loadingModule === module.key} onClick={() => buy(module.key)} type="button">
+                  {loadingModule === module.key ? "Ouverture..." : `Souscrire à ${module.title}`}
+                </button>
+              ) : null}
+            </section>
+          );
+        })}
       </div>
+
       <section className="glass panel profile-panel">
         <div className="panel-heading">
           <div>
-            <h2>Detail de l'equipe</h2>
-            <p>Ajoutez ou retirez des seats depuis Mon profil. Le calcul se met a jour automatiquement.</p>
+            <h2>Compte</h2>
+            <p>{account.email || "Compte connecté"}</p>
           </div>
-          <button className="btn btn-primary btn-compact" onClick={openCheckout} type="button">Payer les seats</button>
+          <button className="btn btn-compact" onClick={() => signOut()} type="button">Déconnexion</button>
         </div>
-        {billingMessage ? <p className="notice">{billingMessage}</p> : null}
-        <div className="team-list">
-          {account.team.map((member, index) => (
-            <div className="team-row" key={member.id}>
-              <div>
-                <strong>{member.name}</strong>
-                <span>{member.email}</span>
-              </div>
-              <span className="badge">{index < account.includedSeats ? "Inclus" : "Payant"}</span>
-            </div>
-          ))}
-        </div>
+        {message ? <p className="notice">{message}</p> : null}
+        <p className="muted">
+          {hasSubscription ? "Au moins un module est actif." : "Vous devez souscrire à au moins un module pour accéder au site."}
+        </p>
       </section>
-      <Link className="btn btn-compact" href="/profil">Retour a la gestion des seats</Link>
     </section>
   );
 }

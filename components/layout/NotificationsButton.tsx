@@ -14,8 +14,8 @@ export function NotificationsButton() {
       {open ? (
         <div className="menu notification-menu" role="status">
           <strong>Notifications</strong>
-          <p>Un justificatif de domicile du garant reste a verifier.</p>
-          <p>Le dossier Camille Martin est pret pour lecture finale.</p>
+          <p>Vos dossiers actifs et vos documents recentes apparaissent ici apres connexion.</p>
+          <p>Ajoutez des dossiers réels dans ELIGIA pour afficher des notifications utiles.</p>
         </div>
       ) : null}
     </div>

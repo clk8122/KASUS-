@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { hasFreeEligiaAccess } from "@/lib/entitlements";
 import { requireAuthContext } from "@/lib/auth-server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getPublicBaseUrl, readJsonBody, requireSameOrigin } from "@/lib/security";
@@ -18,6 +19,10 @@ export async function POST(request: NextRequest) {
   const context = await requireAuthContext(request);
   if (!context) {
     return NextResponse.json({ error: "Non authentifie." }, { status: 401 });
+  }
+
+  if (moduleKey === "eligia" && hasFreeEligiaAccess(context.email)) {
+    return NextResponse.json({ mode: "free_access", module: "eligia" });
   }
 
   if (!process.env.STRIPE_SECRET_KEY || !process.env.NEXT_PUBLIC_STRIPE_PRICE_EXTRA_SEAT) {

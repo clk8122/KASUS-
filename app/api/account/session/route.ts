@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuthContext } from "@/lib/auth-server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { getFreeModules } from "@/lib/entitlements";
 
 export async function GET(request: NextRequest) {
   const context = await requireAuthContext(request);
@@ -18,6 +19,7 @@ export async function GET(request: NextRequest) {
     .select("id, organization_id, first_name, last_name, email, phone")
     .eq("id", context.userId)
     .maybeSingle();
+  const freeModules = getFreeModules(profile?.email ?? context.email);
 
   if (!profile?.organization_id) {
     return NextResponse.json({
@@ -27,7 +29,8 @@ export async function GET(request: NextRequest) {
       organization: null,
       subscriptions: [],
       members: [],
-      hasSubscription: false
+      freeModules,
+      hasSubscription: freeModules.length > 0
     });
   }
 
@@ -56,6 +59,7 @@ export async function GET(request: NextRequest) {
     organization: organizationResponse.data ?? null,
     subscriptions,
     members: membersResponse.data ?? [],
-    hasSubscription: subscriptions.some((subscription) => subscription.status === "active")
+    freeModules,
+    hasSubscription: subscriptions.some((subscription) => subscription.status === "active") || freeModules.length > 0
   });
 }

@@ -7,6 +7,7 @@ import { getSupabaseBrowser, hasBrowserSupabaseConfig } from "@/lib/supabase/bro
 type SessionResponse = {
   authenticated: boolean;
   hasSubscription?: boolean;
+  freeModules?: ModuleKey[];
   organization?: {
     id: string;
     name: string;
@@ -62,7 +63,7 @@ function buildAccount(remote: SessionResponse): AccountState {
     legalName: organization?.legal_name ?? "",
     legalEmail: organization?.legal_email ?? "",
     signature: organization?.signature ?? "",
-    planName: remote.hasSubscription ? "Actif" : "Sans abonnement",
+    planName: remote.hasSubscription ? (remote.freeModules?.length ? "Accès offert" : "Actif") : "Sans abonnement",
     includedSeats: organization?.included_seats ?? 3,
     extraSeatPrice: organization?.extra_seat_price_eur ?? 99,
     team: members.map((member) => ({
@@ -102,7 +103,9 @@ export function useAccount() {
     const nextAccount = buildAccount(payload);
     setAccount(nextAccount);
     setAuthenticated(Boolean(payload.authenticated));
-    const modules = (payload.subscriptions ?? []).filter((subscription) => subscription.status === "active").map((subscription) => subscription.module_key as ModuleKey);
+    const paidModules = (payload.subscriptions ?? []).filter((subscription) => subscription.status === "active").map((subscription) => subscription.module_key as ModuleKey);
+    const freeModules = (payload.freeModules ?? []) as ModuleKey[];
+    const modules = Array.from(new Set([...paidModules, ...freeModules]));
     setActiveModules(modules);
     setHasSubscription(Boolean(payload.hasSubscription));
     setLoading(false);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hasFreeEligiaAccess } from "@/lib/entitlements";
 import { requireAuthContext } from "@/lib/auth-server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
@@ -18,7 +19,7 @@ async function getEligibleSupabase(request: NextRequest) {
     .eq("organization_id", profile.organization_id)
     .eq("module_key", "eligia");
 
-  if (!subscriptions?.some((subscription) => subscription.status === "active")) {
+  if (!subscriptions?.some((subscription) => subscription.status === "active") && !hasFreeEligiaAccess(context.email)) {
     return null;
   }
 

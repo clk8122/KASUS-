@@ -77,7 +77,7 @@ export function SubscriptionClient() {
         {modules.map((module) => {
           const active = activeModules.includes(module.key);
           return (
-            <button className={`subscription-card glass ${active ? "subscription-card-active" : ""}`} key={module.key} onClick={() => void buy(module.key)} type="button">
+            <button className={`subscription-card glass ${active ? "subscription-card-active" : ""}`} key={module.key} onClick={() => (active ? undefined : void buy(module.key))} type="button">
               <div className="subscription-card-top">
                 <span className="subscription-chip">{module.tagline}</span>
                 {active ? <span className="badge badge-green">Actif</span> : <span className="badge">Verrouillé</span>}
@@ -98,7 +98,7 @@ export function SubscriptionClient() {
                   {active ? "Déjà activé" : "Cliquer pour débloquer"}
                 </span>
                 <span className="subscription-action">
-                  {loadingModule === module.key ? "Ouverture..." : `Souscrire`}
+                  {active ? "Actif" : loadingModule === module.key ? "Ouverture..." : `Souscrire`}
                   <ArrowRight size={16} />
                 </span>
               </div>

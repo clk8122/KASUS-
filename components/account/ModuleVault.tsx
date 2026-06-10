@@ -54,6 +54,7 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
   const [selected, setSelected] = useState<ModuleKey | "">("");
   const [pending, setPending] = useState<ModuleKey | "">("");
   const currentModule = useMemo(() => modules.find((item) => item.key === selected) ?? null, [selected]);
+  const selectedIsActive = currentModule ? activeModules.includes(currentModule.key) : false;
 
   async function subscribe(moduleKey: ModuleKey) {
     setPending(moduleKey);
@@ -142,23 +143,33 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
                 </div>
               ))}
             </div>
-            <div className="vault-modal-actions">
-              <button
-                className="btn btn-primary"
-                disabled={pending === currentModule.key}
-                onClick={() => void subscribe(currentModule.key)}
-                type="button"
-              >
-                {pending === currentModule.key ? "Ouverture..." : `Souscrire à ${currentModule.title}`}
-              </button>
-              <button className="btn" onClick={() => setSelected("")} type="button">
-                Continuer sans ouvrir
-              </button>
-            </div>
-            <div className="vault-note">
-              <Sparkles size={16} />
-              <span>Chaque module est facturé séparément, à 99 EUR / mois.</span>
-            </div>
+            {selectedIsActive ? (
+              <div className="vault-modal-actions">
+                <button className="btn btn-primary" onClick={() => setSelected("")} type="button">
+                  Ouvrir le module
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="vault-modal-actions">
+                  <button
+                    className="btn btn-primary"
+                    disabled={pending === currentModule.key}
+                    onClick={() => void subscribe(currentModule.key)}
+                    type="button"
+                  >
+                    {pending === currentModule.key ? "Ouverture..." : `Souscrire à ${currentModule.title}`}
+                  </button>
+                  <button className="btn" onClick={() => setSelected("")} type="button">
+                    Continuer sans ouvrir
+                  </button>
+                </div>
+                <div className="vault-note">
+                  <Sparkles size={16} />
+                  <span>Chaque module est facturé séparément, à 99 EUR / mois.</span>
+                </div>
+              </>
+            )}
           </section>
         </div>
       ) : null}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { RentalDossier, buildLocalAnalysis } from "@/lib/rental-flow";
 import { requireAuthContext } from "@/lib/auth-server";
+import { hasFreeEligiaAccess } from "@/lib/entitlements";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { readJsonBody, sanitizePositiveNumber, sanitizeText } from "@/lib/security";
 
@@ -20,7 +21,7 @@ async function getOrganizationAccess(request: NextRequest) {
     .eq("organization_id", profile.organization_id)
     .eq("module_key", "eligia");
 
-  const allowed = subscriptions?.some((subscription) => subscription.status === "active");
+  const allowed = subscriptions?.some((subscription) => subscription.status === "active") || hasFreeEligiaAccess(context.email);
   if (!allowed) return null;
 
   return { context, supabase, organizationId: profile.organization_id };

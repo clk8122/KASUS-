@@ -1,0 +1,63 @@
+Lorsqu'on appuie sur le module ELIGIA, il faut le logo eligia en gros au milieu 
+
+en haut a gauche en petit le logo KASUS 
+
+en haut à droite un logo notification qui permet de recevoir les notifs concernant les dossier recu des gens. 
+en haut a droite aussi un logo profil qui permet d'ouvrir un menu coullisser. 
+
+dans le menu couliser : 
+
+Mon profil, 
+Réglages 
+RGPD 
+Deconnecter 
+
+Esnutie en bas du logo eligia il faut juste et uniquement : 
+
+Mes dossiers 
+Création d'un dossier. 
+
+
+quand on appuie sur mes dossier cela mene vers une page tres simpliste avec le listing des dossiers déjà recu, des dossiers créer etc. 
+
+l'adresse du bien, le nom des locataires, et un petit hud du scoring. et le pourcentage du dosiser complet. 
+
+pas de hud qui dis nombre de dosssier, dossier ce mois ci etc.. 
+
+
+ensuite ils peuvent appiyer sur leur dosiser pour aller vers le hud qui list tout 
+
+sur la liste des dosisers tout à droite il ya un bouton pour supprimer le dosiser avec confirmation. 
+
+La page doit etre design et très ludique. sans hud inutle etc.. 
+
+un petit + est envisageable pour permettre de par ce biais créer un dosiser. un petit hud apparait et ca dis : créer un dossier soi meme ou generer lien candidat et lors de l'appuie ca mene vers la bonne page. 
+
+pour la page mes dossiers il faut une fleche qui peut retourner au menu d'eligia. 
+
+ensuite il ya la page creation d'un dossier.  ca fais apparaitre un hud qui propose soit créer son dossier soi meme ( textre qui dit vous avez deaj les pieces justificatives du candidat ) soit generer lien candidat ( vous osuhaitez que votree candidat créer son dossier canddiat ) 
+
+
+Creation d'un dossier, ca meenve directement vers une page tres simple toujours avec les logos et ca dis : adresse du bien : on rentre l'adresse et une fleche pour passer a la prochaine question. ensuite ca change de question et ca dmeande le montant du loyer. une fois rentrer cela va faire apparaitre televerser vos fichiers. la personne televerse tout les fichiers jpg png pdf etc.. 
+une fois fais il appuie sur ok. 
+et l'ia fera tout le processus. unifier en un pdf etc.. 
+
+
+tout ce processus doit etre tres sobre design ludique. pas de bouton inutilte rien. juste un bouton pour retourner a la question d'avant. 
+
+
+ensuite la page generer un lien candidats, cela ouvre un hud qui demande l'adresse du bine, le montant du loyer et ensuite ca genere le lien a envoyer. une notification dit : envoyer ce lien à vos candidats ( speech peut etre qui dis lien explirable au bout de 10 jours, reutilisable par les locataire pour completer le piece si ils sont plusieurs a devoir donner des pieces justificaive ) 
+
+une fois que lagent immobilier à créer le lien candidat, ca dis ausis qu'une dossier à été precrée dans la section mes dossiers. 
+
+
+dans mes dosiser ca a créer un dossier, avec l'adresse du bien montant du loyer et ecris lien candidat envoyé. 
+dans ce dossier si on appuie il y'aura juste ecris ; en attente du candidat et un bouton pour ravoir le lien candidat pour le renvoyer au candidat. 
+
+
+
+
+tout le site doit etre ludique simple design sans aucun hud en trop. des data crm inutile etc. 
+
+sur le menu eligia ya un bouton aussi pour retourner sur le menu principal kasus 
+

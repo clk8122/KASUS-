@@ -1,0 +1,10 @@
+.next
+node_modules
+.env.local
+.env.production
+.env.production.local
+tsconfig.tsbuildinfo
+.codex
+*.log
+dist
+*.zip

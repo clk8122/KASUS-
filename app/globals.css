@@ -1125,6 +1125,55 @@ button {
   padding: clamp(42px, 7vw, 76px) 0;
 }
 
+.profile-hero,
+.eligia-landing {
+  align-items: start;
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  padding: clamp(24px, 4vw, 34px);
+}
+
+.profile-hero h1,
+.eligia-landing h1 {
+  font-size: clamp(3rem, 6vw, 6.2rem);
+  line-height: 0.92;
+  margin: 8px 0 0;
+}
+
+.profile-hero p,
+.eligia-landing p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 12px 0 0;
+}
+
+.profile-hero-stats {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-hero-stats article {
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 22px;
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+}
+
+.profile-hero-stats span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.profile-hero-stats strong {
+  font-size: 1.25rem;
+}
+
 .profile-layout {
   align-items: start;
   display: grid;
@@ -1138,6 +1187,33 @@ button {
   padding: 24px;
   position: sticky;
   top: 24px;
+}
+
+.profile-mini-metrics {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-mini-metrics span {
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  display: grid;
+  gap: 3px;
+  padding: 14px;
+}
+
+.profile-mini-metrics strong {
+  font-size: 1.1rem;
+}
+
+.profile-mini-metrics small {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .profile-avatar {
@@ -1246,6 +1322,11 @@ button {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.profile-logo-grid {
+  display: grid;
+  gap: 16px;
+}
+
 .microcopy {
   color: var(--muted);
   font-size: 0.86rem;
@@ -1291,6 +1372,98 @@ button {
     #f8f6f0;
   background-size: auto, 92px 92px, 92px 92px, auto;
   min-height: 100vh;
+}
+
+.eligia-landing {
+  margin-top: 20px;
+}
+
+.eligia-hero-copy {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+}
+
+.eligia-hero-copy p {
+  max-width: 62ch;
+}
+
+.eligia-hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.eligia-hero-pills span {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  color: var(--graphite);
+  display: inline-flex;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.eligia-hero-rail {
+  display: grid;
+  gap: 14px;
+}
+
+.eligia-rail-card {
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 24px;
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.eligia-rail-card svg {
+  color: var(--graphite);
+}
+
+.eligia-rail-card strong {
+  display: block;
+  font-size: 1.15rem;
+  margin-bottom: 4px;
+}
+
+.eligia-rail-card p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.eligia-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.eligia-feature-card {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.eligia-feature-card h2 {
+  font-size: 1.9rem;
+  margin: 0;
+}
+
+.eligia-feature-card p {
+  margin: 10px 0 0;
+}
+
+.eligia-feature-icon {
+  align-items: center;
+  background: rgba(17, 20, 24, 0.08);
+  border-radius: 18px;
+  display: inline-flex;
+  height: 52px;
+  justify-content: center;
+  width: 52px;
 }
 
 .eligia-menu-center {
@@ -2794,13 +2967,17 @@ button {
   .module-grid,
   .auth-shell,
   .split,
+  .profile-hero,
   .profile-layout,
   .profile-secondary-grid,
+  .profile-mini-metrics,
   .invite-row,
   .billing-grid,
   .eligia-hero,
+  .eligia-landing,
   .eligia-menu-typographic,
   .eligia-feature-grid,
+  .eligia-grid,
   .dossier-grid,
   .person-grid,
   .profile-strip,

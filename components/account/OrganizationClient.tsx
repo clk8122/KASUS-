@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useAccount } from "@/lib/use-account";
 import { useRef, useState } from "react";
+import { useAccount } from "@/lib/use-account";
 
 export function OrganizationClient() {
   const { account, updateAccount, updateLogo } = useAccount();
@@ -28,26 +28,58 @@ export function OrganizationClient() {
 
   return (
     <section className="profile-page">
-      <div className="profile-heading">
-        <p className="eyebrow">Organisation</p>
-        <h1>{account.agencyName}</h1>
-      </div>
+      <section className="profile-hero glass">
+        <div>
+          <p className="eyebrow">Organisation</p>
+          <h1>{account.agencyName || "Organisation"}</h1>
+          <p className="modules-subtitle">
+            Identité de marque, coordonnées et logo photo pour les exports et les écrans métier.
+          </p>
+        </div>
+        <div className="profile-hero-stats">
+          <article>
+            <span>Nom agence</span>
+            <strong>{account.agencyName || "À compléter"}</strong>
+          </article>
+          <article>
+            <span>Raison sociale</span>
+            <strong>{account.legalName || "Non renseignée"}</strong>
+          </article>
+          <article>
+            <span>Logo</span>
+            <strong>{account.agencyLogo ? "Ajouté" : "En attente"}</strong>
+          </article>
+        </div>
+      </section>
+
       <div className="profile-layout">
         <aside className="profile-summary glass">
-          <div className="profile-avatar">{account.agencyName.slice(0, 2).toUpperCase()}</div>
+          <div className="profile-avatar">{(account.agencyName.slice(0, 2) || "KA").toUpperCase()}</div>
           <div>
-            <h2>{account.agencyName}</h2>
-            <p>{account.agencyAddress}</p>
+            <h2>{account.agencyName || "Votre agence"}</h2>
+            <p>{account.agencyAddress || "Adresse à compléter"}</p>
           </div>
-          <p className="microcopy">Ces informations peuvent etre reprises dans les modules et documents generes.</p>
+          <div className="profile-mini-metrics">
+            <span>
+              <strong>{account.firstName || "—"}</strong>
+              <small>contact</small>
+            </span>
+            <span>
+              <strong>{account.phone || "—"}</strong>
+              <small>téléphone</small>
+            </span>
+          </div>
+          <p className="microcopy">Ces informations peuvent être reprises dans les modules et documents générés.</p>
         </aside>
+
         <div className="profile-stack">
           <section className="glass panel profile-panel">
             <div className="panel-heading">
               <div>
-                <h2>Identite de l'agence</h2>
-                <p>Le nom de l'agence modifie ici apparait aussi en grand titre sur le choix des modules.</p>
+                <h2>Identité de l'agence</h2>
+                <p>Le nom de l'agence modifié ici apparaît aussi sur les écrans principaux.</p>
               </div>
+              <span className="microcopy">Sauvegarde automatique</span>
             </div>
             <div className="split">
               <label className="field">
@@ -76,17 +108,19 @@ export function OrganizationClient() {
                 <p>Ajoutez une photo de logo et une signature agence pour les futurs exports.</p>
               </div>
             </div>
-            <label className="field">
-              Photo du logo
-              <input
-                accept="image/*"
-                className="input"
-                ref={fileInputRef}
-                type="file"
-                onChange={(event) => void handleLogoChange(event.target.files?.[0] ?? null)}
-              />
-            </label>
-            {account.agencyLogo ? <Image alt="Logo de l'agence" className="logo-preview" height={160} unoptimized width={420} src={account.agencyLogo} /> : null}
+            <div className="profile-logo-grid">
+              <label className="field">
+                Photo du logo
+                <input
+                  accept="image/*"
+                  className="input"
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={(event) => void handleLogoChange(event.target.files?.[0] ?? null)}
+                />
+              </label>
+              {account.agencyLogo ? <Image alt="Logo de l'agence" className="logo-preview" height={160} unoptimized width={420} src={account.agencyLogo} /> : null}
+            </div>
             <label className="field">
               Signature agence
               <textarea className="input textarea" value={account.signature} onChange={(event) => updateAccount({ signature: event.target.value })} />

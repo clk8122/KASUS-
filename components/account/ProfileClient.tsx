@@ -26,10 +26,29 @@ export function ProfileClient() {
 
   return (
     <section className="profile-page">
-      <div className="profile-heading">
-        <p className="eyebrow">Compte</p>
-        <h1>Mon profil</h1>
-      </div>
+      <section className="profile-hero glass">
+        <div>
+          <p className="eyebrow">Compte</p>
+          <h1>Mon profil</h1>
+          <p className="modules-subtitle">
+            Une vue claire pour votre identité, vos accès et vos paramètres de facturation.
+          </p>
+        </div>
+        <div className="profile-hero-stats">
+          <article>
+            <span>Nom affiché</span>
+            <strong>{[account.firstName, account.lastName].filter(Boolean).join(" ") || account.email || "Compte"}</strong>
+          </article>
+          <article>
+            <span>Abonnement</span>
+            <strong>{account.planName}</strong>
+          </article>
+          <article>
+            <span>Équipe</span>
+            <strong>{account.team.length} membre(s)</strong>
+          </article>
+        </div>
+      </section>
 
       <div className="profile-layout">
         <aside className="profile-summary glass">
@@ -40,6 +59,16 @@ export function ProfileClient() {
             <h2>{[account.firstName, account.lastName].filter(Boolean).join(" ") || account.email || "Compte"}</h2>
             <p>{account.planName}</p>
           </div>
+          <div className="profile-mini-metrics">
+            <span>
+              <strong>{account.includedSeats}</strong>
+              <small>places incluses</small>
+            </span>
+            <span>
+              <strong>{account.extraSeatPrice} EUR</strong>
+              <small>siège additionnel</small>
+            </span>
+          </div>
           <p className="microcopy">Les informations ci-dessous sont synchronisées avec Supabase.</p>
         </aside>
 
@@ -48,7 +77,7 @@ export function ProfileClient() {
             <div className="panel-heading">
               <div>
                 <h2>Informations personnelles</h2>
-                <p>Modifiez votre identité et les coordonnées de l'organisation.</p>
+                <p>Modifiez votre identité et les coordonnées de l’organisation.</p>
               </div>
               <button className="btn btn-primary btn-compact" onClick={save} type="button">Enregistrer</button>
             </div>

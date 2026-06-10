@@ -1,29 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { ArrowRight, Check, Crown, LockKeyhole, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useAccount } from "@/lib/use-account";
 
-const modules = [
+type ModuleKey = "eligia" | "studio";
+
+type ModuleCard = {
+  key: ModuleKey;
+  title: string;
+  tagline: string;
+  description: string;
+  points: string[];
+};
+
+const modules: ModuleCard[] = [
   {
-    key: "eligia" as const,
+    key: "eligia",
     title: "ELIGIA",
-    description: "Gestion locative, dossiers candidats et analyse documentaire.",
-    price: 99
+    tagline: "Gestion locative",
+    description: "Dossiers, portail candidat et analyse documentaire avec une interface opérationnelle.",
+    points: ["Analyse des pièces", "Suivi des candidatures", "Relances et exports"]
   },
   {
-    key: "studio" as const,
+    key: "studio",
     title: "STUDIO",
-    description: "Création d'annonces immobilières et contenus professionnels.",
-    price: 99
+    tagline: "Création immobilière",
+    description: "Annonces, visuels et contenus de présentation avec une direction artistique nette.",
+    points: ["Mises en page premium", "Contenus prêts à publier", "Création guidée"]
   }
 ];
 
 export function SubscriptionClient() {
   const { activeModules, account, hasSubscription, signOut, startCheckout } = useAccount();
   const [message, setMessage] = useState("");
-  const [loadingModule, setLoadingModule] = useState<"eligia" | "studio" | "">("");
+  const [loadingModule, setLoadingModule] = useState<ModuleKey | "">("");
+  const activeCount = useMemo(() => activeModules.length, [activeModules]);
 
-  async function buy(moduleKey: "eligia" | "studio") {
+  async function buy(moduleKey: ModuleKey) {
     setLoadingModule(moduleKey);
     setMessage("");
     const payload = await startCheckout(moduleKey);
@@ -34,45 +48,82 @@ export function SubscriptionClient() {
   }
 
   return (
-    <section className="profile-page">
-      <div className="profile-heading">
-        <p className="eyebrow">Abonnement</p>
-        <h1>Modules et accès</h1>
-        <p className="modules-subtitle">Chaque module est facturé 99 EUR / mois. Sans module actif, aucun espace produit n'est accessible.</p>
+    <section className="subscription-shell">
+      <div className="subscription-hero glass">
+        <div>
+          <p className="eyebrow">Abonnement</p>
+          <h1>Modules activables à la carte</h1>
+          <p className="modules-subtitle">
+            Chaque module coûte 99 EUR / mois. Sans abonnement, aucun espace produit n’est accessible.
+          </p>
+        </div>
+        <div className="subscription-metrics">
+          <article>
+            <span>Compte</span>
+            <strong>{account.email || "Connecté"}</strong>
+          </article>
+          <article>
+            <span>Modules actifs</span>
+            <strong>{activeCount}</strong>
+          </article>
+          <article>
+            <span>Statut</span>
+            <strong>{hasSubscription ? "Actif" : "Verrouillé"}</strong>
+          </article>
+        </div>
       </div>
 
-      <div className="billing-grid billing-grid-modules">
+      <div className="billing-grid billing-grid-modules subscription-grid">
         {modules.map((module) => {
           const active = activeModules.includes(module.key);
           return (
-            <section className="glass panel profile-panel billing-hero" key={module.key}>
-              <h2>{module.title}</h2>
-              <strong>{module.price} EUR</strong>
+            <button className={`subscription-card glass ${active ? "subscription-card-active" : ""}`} key={module.key} onClick={() => void buy(module.key)} type="button">
+              <div className="subscription-card-top">
+                <span className="subscription-chip">{module.tagline}</span>
+                {active ? <span className="badge badge-green">Actif</span> : <span className="badge">Verrouillé</span>}
+              </div>
+              <div className="subscription-card-title">
+                <h2>{module.title}</h2>
+                <strong>99 EUR</strong>
+              </div>
               <p>{module.description}</p>
-              <p className={active ? "success-text" : "muted"}>{active ? "Actif" : "Non souscrit"}</p>
-              {!active ? (
-                <button className="btn btn-primary btn-compact" disabled={loadingModule === module.key} onClick={() => buy(module.key)} type="button">
-                  {loadingModule === module.key ? "Ouverture..." : `Souscrire à ${module.title}`}
-                </button>
-              ) : null}
-            </section>
+              <div className="subscription-points">
+                {module.points.map((point) => (
+                  <span key={point}><Check size={14} /> {point}</span>
+                ))}
+              </div>
+              <div className="subscription-card-bottom">
+                <span>
+                  <LockKeyhole size={15} />
+                  {active ? "Déjà activé" : "Cliquer pour débloquer"}
+                </span>
+                <span className="subscription-action">
+                  {loadingModule === module.key ? "Ouverture..." : `Souscrire`}
+                  <ArrowRight size={16} />
+                </span>
+              </div>
+            </button>
           );
         })}
       </div>
 
-      <section className="glass panel profile-panel">
-        <div className="panel-heading">
-          <div>
-            <h2>Compte</h2>
-            <p>{account.email || "Compte connecté"}</p>
-          </div>
-          <button className="btn btn-compact" onClick={() => signOut()} type="button">Déconnexion</button>
+      <section className="subscription-footer glass">
+        <div>
+          <p className="eyebrow">Compte</p>
+          <h2>{account.agencyName || "Votre agence"}</h2>
+          <p className="muted">Le site reste verrouillé tant qu’aucun module n’est actif.</p>
         </div>
-        {message ? <p className="notice">{message}</p> : null}
-        <p className="muted">
-          {hasSubscription ? "Au moins un module est actif." : "Vous devez souscrire à au moins un module pour accéder au site."}
-        </p>
+        <div className="subscription-footer-actions">
+          <button className="btn btn-compact" onClick={() => void signOut()} type="button">
+            Déconnexion
+          </button>
+          <span className="subscription-footer-note">
+            <Crown size={15} /> Accès modulaire par abonnement
+          </span>
+        </div>
       </section>
+
+      {message ? <p className="notice">{message}</p> : null}
     </section>
   );
 }

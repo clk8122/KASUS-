@@ -194,6 +194,496 @@ button {
   place-items: center;
 }
 
+.auth-shell {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.86fr);
+  min-height: 100vh;
+  padding: 28px;
+}
+
+.auth-hero,
+.auth-card,
+.vault-hero,
+.subscription-hero,
+.subscription-footer {
+  overflow: hidden;
+}
+
+.auth-hero {
+  display: grid;
+  gap: 24px;
+  padding: clamp(28px, 4vw, 42px);
+  position: relative;
+}
+
+.auth-hero::before,
+.vault-hero::before,
+.subscription-hero::before {
+  background:
+    radial-gradient(circle at 80% 12%, rgba(39, 90, 143, 0.16), transparent 20rem),
+    radial-gradient(circle at 14% 78%, rgba(23, 132, 99, 0.15), transparent 18rem);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.auth-hero > *,
+.vault-hero > *,
+.subscription-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-hero-copy {
+  display: grid;
+  gap: 14px;
+  max-width: 680px;
+}
+
+.auth-hero-copy h1,
+.vault-hero-copy h1,
+.subscription-hero h1 {
+  font-size: clamp(2.7rem, 5vw, 5.3rem);
+  line-height: 0.96;
+  margin: 0;
+}
+
+.auth-subtitle {
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 58ch;
+}
+
+.auth-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.auth-pills span,
+.subscription-footer-note,
+.subscription-chip {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 999px;
+  color: var(--graphite);
+  display: inline-flex;
+  gap: 6px;
+  padding: 8px 12px;
+}
+
+.auth-visual {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.auth-visual-panel {
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 22px;
+  box-shadow: 0 16px 34px rgba(16, 24, 36, 0.08);
+  display: grid;
+  gap: 8px;
+  min-height: 170px;
+  padding: 20px;
+}
+
+.auth-visual-panel span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.auth-visual-panel strong {
+  font-size: 1.65rem;
+  line-height: 1.1;
+}
+
+.auth-visual-panel small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.auth-visual-panel-primary {
+  background:
+    linear-gradient(180deg, rgba(20, 25, 36, 0.98), rgba(34, 43, 58, 0.94));
+  color: #fff;
+}
+
+.auth-visual-panel-primary span,
+.auth-visual-panel-primary small {
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.auth-card {
+  align-self: center;
+  display: grid;
+  gap: 20px;
+  padding: clamp(24px, 3vw, 34px);
+}
+
+.auth-card-top {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-card-note {
+  color: var(--muted);
+  margin: 0;
+}
+
+.btn-wide {
+  justify-content: center;
+  width: 100%;
+}
+
+.access-card-loading {
+  align-items: center;
+  display: grid;
+  justify-items: center;
+  min-height: 260px;
+}
+
+.access-card-loading p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.vault-shell {
+  display: grid;
+  gap: 22px;
+}
+
+.vault-hero,
+.subscription-hero {
+  display: grid;
+  gap: 20px;
+  padding: clamp(24px, 3vw, 34px);
+  position: relative;
+}
+
+.vault-hero {
+  grid-template-columns: minmax(0, 1.3fr) minmax(220px, 0.8fr);
+}
+
+.vault-hero-copy {
+  display: grid;
+  gap: 12px;
+  max-width: 760px;
+}
+
+.vault-hero-copy p,
+.subscription-hero p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.vault-hero-metrics,
+.subscription-metrics {
+  display: grid;
+  gap: 12px;
+}
+
+.vault-hero-metrics div,
+.subscription-metrics article {
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  display: grid;
+  gap: 4px;
+  padding: 18px;
+}
+
+.vault-hero-metrics span,
+.subscription-metrics span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.vault-hero-metrics strong,
+.subscription-metrics strong {
+  font-size: 1.3rem;
+}
+
+.vault-grid {
+  gap: 18px;
+}
+
+.vault-card {
+  border: 0;
+  align-items: start;
+  text-align: left;
+}
+
+.vault-card .module-float-icon,
+.vault-card .module-badge,
+.vault-card .module-lock,
+.vault-card .module-open,
+.vault-card .module-eyebrow,
+.vault-card p,
+.vault-card h2 {
+  position: relative;
+  z-index: 1;
+}
+
+.module-float-icon {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 12px 28px rgba(16, 24, 36, 0.08);
+  display: inline-flex;
+  height: 54px;
+  justify-content: center;
+  width: 54px;
+}
+
+.module-badge {
+  align-self: start;
+  background: rgba(17, 24, 39, 0.92);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.76rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  padding: 8px 12px;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.module-lock {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  justify-self: end;
+  margin-top: -46px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+}
+
+.module-lock span {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.module-eyebrow {
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.vault-modal-scrim {
+  align-items: center;
+  background: rgba(8, 12, 18, 0.36);
+  backdrop-filter: blur(20px);
+  display: grid;
+  inset: 0;
+  justify-items: center;
+  padding: 22px;
+  position: fixed;
+  z-index: 60;
+}
+
+.vault-modal {
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+  padding: 28px;
+  position: relative;
+  width: min(760px, 100%);
+}
+
+.vault-modal-green {
+  box-shadow: 0 28px 96px rgba(23, 132, 99, 0.2), var(--shadow), var(--glass-highlight);
+}
+
+.vault-modal-graphite {
+  box-shadow: 0 28px 96px rgba(17, 24, 39, 0.22), var(--shadow), var(--glass-highlight);
+}
+
+.vault-close {
+  align-items: center;
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.7);
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  justify-content: center;
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 42px;
+}
+
+.vault-modal-header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding-right: 54px;
+}
+
+.vault-modal-copy {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
+  max-width: 68ch;
+}
+
+.vault-points {
+  display: grid;
+  gap: 10px;
+}
+
+.vault-points div {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto 1fr;
+  padding: 14px 16px;
+}
+
+.vault-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.vault-note {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  gap: 8px;
+}
+
+.vault-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.subscription-shell {
+  display: grid;
+  gap: 22px;
+}
+
+.subscription-hero {
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+}
+
+.subscription-grid {
+  width: 100%;
+}
+
+.subscription-card {
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  gap: 16px;
+  padding: 28px;
+  text-align: left;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.subscription-card:hover {
+  transform: translateY(-3px);
+}
+
+.subscription-card-active {
+  box-shadow: 0 30px 74px rgba(23, 132, 99, 0.14), var(--shadow), var(--glass-highlight);
+}
+
+.subscription-card-top,
+.subscription-card-bottom {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.subscription-card-title {
+  display: grid;
+  gap: 10px;
+}
+
+.subscription-card-title h2 {
+  font-size: 2rem;
+  margin: 0;
+}
+
+.subscription-card-title strong {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.subscription-points {
+  display: grid;
+  gap: 10px;
+}
+
+.subscription-points span,
+.subscription-card-bottom span {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  gap: 8px;
+}
+
+.subscription-action {
+  color: var(--graphite) !important;
+  font-weight: 760;
+}
+
+.subscription-footer {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  padding: 22px 24px;
+}
+
+.subscription-footer h2 {
+  margin: 0;
+}
+
+.subscription-footer-actions {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+}
+
+.access-form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-card .input {
+  background: rgba(255, 255, 255, 0.84);
+  min-height: 54px;
+}
+
+.auth-card .split {
+  gap: 14px;
+}
+
 .access-card {
   display: grid;
   gap: 22px;
@@ -481,12 +971,13 @@ button {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.74)),
     var(--surface-strong);
-  border: 1px solid rgba(22, 22, 22, 0.08);
+  border: 0;
   border-radius: 30px;
   box-shadow: 0 28px 70px rgba(22, 22, 22, 0.07);
   display: grid;
   gap: 28px;
   min-height: 340px;
+  cursor: pointer;
   overflow: hidden;
   padding: 30px;
   position: relative;
@@ -2301,6 +2792,7 @@ button {
   }
 
   .module-grid,
+  .auth-shell,
   .split,
   .profile-layout,
   .profile-secondary-grid,
@@ -2337,6 +2829,32 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .auth-shell,
+  .vault-hero,
+  .subscription-hero,
+  .subscription-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-visual {
+    grid-template-columns: 1fr;
+  }
+
+  .subscription-card-title strong {
+    font-size: 2rem;
+  }
+
+  .vault-modal-header {
+    align-items: start;
+    flex-direction: column;
+    padding-right: 0;
+  }
+
+  .vault-close {
+    right: 14px;
+    top: 14px;
+  }
+
   .dossiers-heading {
     align-items: stretch;
     flex-direction: column;
@@ -2354,6 +2872,11 @@ button {
 
   .profile-summary {
     position: static;
+  }
+
+  .vault-grid,
+  .billing-grid-modules {
+    grid-template-columns: 1fr;
   }
 
   .panel-heading,

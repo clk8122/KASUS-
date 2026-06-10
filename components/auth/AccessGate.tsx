@@ -1,7 +1,8 @@
 "use client";
 
 import { ReactNode, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
+import { ModuleVault } from "@/components/account/ModuleVault";
 import { useAccount } from "@/lib/use-account";
 
 type AccessGateProps = {
@@ -80,8 +81,8 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
   if (loading) {
     return (
       <main className="access-shell">
-        <div className="access-card glass">
-          <Loader2 className="spin" size={24} />
+        <div className="access-card glass access-card-loading">
+          <Loader2 className="spin" size={28} />
           <p>Chargement de votre accès...</p>
         </div>
       </main>
@@ -90,29 +91,57 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
 
   if (!authenticated) {
     return (
-      <main className="access-shell">
-        <section className="access-card glass">
-          <div className="access-brand">
-            <span className="brand-wordmark">{title}</span>
-            {subtitle ? <p>{subtitle}</p> : null}
+      <main className="auth-shell">
+        <section className="auth-hero glass">
+          <div className="auth-hero-copy">
+            <p className="eyebrow">Plateforme privée</p>
+            <h1>{title}</h1>
+            {subtitle ? <p className="auth-subtitle">{subtitle}</p> : null}
+            <div className="auth-pills">
+              <span><Sparkles size={14} /> Authentification</span>
+              <span><Sparkles size={14} /> Abonnement par module</span>
+              <span><Sparkles size={14} /> Dossiers réels</span>
+            </div>
           </div>
-          <div className="role-toggle">
-            <button className={mode === "signin" ? "selected" : ""} onClick={() => setMode("signin")} type="button">Connexion</button>
-            <button className={mode === "signup" ? "selected" : ""} onClick={() => setMode("signup")} type="button">Inscription</button>
+          <div className="auth-visual">
+            <div className="auth-visual-panel auth-visual-panel-primary">
+              <span>Accès</span>
+              <strong>Verrouillé</strong>
+              <small>Aucun contenu factice, aucun espace ouvert sans session.</small>
+            </div>
+            <div className="auth-visual-panel">
+              <span>Modules</span>
+              <strong>99 EUR / mois</strong>
+              <small>Chaque module s’active individuellement.</small>
+            </div>
+          </div>
+        </section>
+
+        <section className="auth-card glass">
+          <div className="auth-card-top">
+            <div className="role-toggle">
+              <button className={mode === "signin" ? "selected" : ""} onClick={() => setMode("signin")} type="button">Connexion</button>
+              <button className={mode === "signup" ? "selected" : ""} onClick={() => setMode("signup")} type="button">Inscription</button>
+            </div>
+            <p className="auth-card-note">{mode === "signin" ? "Revenez sur votre espace." : "Créez votre compte agence."}</p>
           </div>
           <form className="access-form" onSubmit={handleSubmit}>
             {mode === "signup" ? (
               <>
-                <input className="input" placeholder="Nom de l'agence" value={form.agencyName} onChange={(event) => setForm((current) => ({ ...current, agencyName: event.target.value }))} />
+                <div className="split">
+                  <input className="input" placeholder="Nom de l'agence" value={form.agencyName} onChange={(event) => setForm((current) => ({ ...current, agencyName: event.target.value }))} />
+                  <input className="input" placeholder="Email" type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} />
+                </div>
                 <div className="split">
                   <input className="input" placeholder="Prénom" value={form.firstName} onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))} />
                   <input className="input" placeholder="Nom" value={form.lastName} onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))} />
                 </div>
               </>
-            ) : null}
-            <input className="input" placeholder="Email" type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} />
+            ) : (
+              <input className="input" placeholder="Email" type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} />
+            )}
             <input className="input" placeholder="Mot de passe" type="password" value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} />
-            <button className="btn btn-primary" type="submit">{mode === "signin" ? "Se connecter" : "Créer le compte"}</button>
+            <button className="btn btn-primary btn-wide" type="submit">{mode === "signin" ? "Se connecter" : "Créer le compte"}</button>
           </form>
           {message ? <p className="notice">{message}</p> : null}
         </section>
@@ -121,38 +150,7 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
   }
 
   if (!canUseRequiredModule && !allowWithoutSubscription) {
-    return (
-      <main className="access-shell">
-        <section className="access-card glass">
-          <div className="access-brand">
-            <span className="brand-wordmark">{title}</span>
-            <p>Votre compte est connecté, mais aucun module actif n'est encore disponible.</p>
-          </div>
-          <div className="billing-grid billing-grid-modules">
-            <article className="glass panel profile-panel billing-hero">
-              <h2>ELIGIA</h2>
-              <strong>99 EUR</strong>
-              <p>par mois et par module.</p>
-              <button className="btn btn-primary btn-compact" disabled={pending === "eligia"} onClick={() => buy("eligia")} type="button">
-                {pending === "eligia" ? "Ouverture..." : "Débloquer ELIGIA"}
-              </button>
-            </article>
-            <article className="glass panel profile-panel billing-hero">
-              <h2>STUDIO</h2>
-              <strong>99 EUR</strong>
-              <p>par mois et par module.</p>
-              <button className="btn btn-primary btn-compact" disabled={pending === "studio"} onClick={() => buy("studio")} type="button">
-                {pending === "studio" ? "Ouverture..." : "Débloquer STUDIO"}
-              </button>
-            </article>
-          </div>
-          {message ? <p className="notice">{message}</p> : null}
-          <div className="actions">
-            <button className="btn btn-compact" onClick={() => signOut()} type="button">Déconnexion</button>
-          </div>
-        </section>
-      </main>
-    );
+    return <ModuleVault mode="locked" />;
   }
 
   return <>{children}</>;

@@ -83,7 +83,7 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
       <main className="access-shell">
         <div className="access-card glass access-card-loading">
           <Loader2 className="spin" size={28} />
-          <p>Chargement de votre accès...</p>
+          <p>Chargement de KASUS...</p>
         </div>
       </main>
     );
@@ -95,7 +95,7 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
         <section className="auth-hero glass">
           <div className="auth-hero-copy">
             <p className="eyebrow">Plateforme privée</p>
-            <h1>{title}</h1>
+            <h1 className="auth-wordmark">{title}</h1>
             {subtitle ? <p className="auth-subtitle">{subtitle}</p> : null}
             <div className="auth-pills">
               <span><Sparkles size={14} /> Authentification</span>

@@ -250,6 +250,13 @@ button {
   margin: 0;
 }
 
+.auth-wordmark {
+  font-size: clamp(4.6rem, 11vw, 8.8rem) !important;
+  letter-spacing: 0.2em;
+  line-height: 0.82 !important;
+  text-transform: uppercase;
+}
+
 .auth-subtitle {
   color: var(--muted);
   font-size: 1.08rem;
@@ -281,6 +288,7 @@ button {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: end;
 }
 
 .auth-visual-panel {
@@ -380,6 +388,32 @@ button {
   max-width: 760px;
 }
 
+.vault-hero-copy-center {
+  align-items: center;
+  text-align: center;
+  max-width: none;
+}
+
+.vault-hero-landing {
+  align-items: center;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.68fr);
+  min-height: 300px;
+}
+
+.vault-title {
+  font-size: clamp(5rem, 13vw, 11rem) !important;
+  letter-spacing: 0.26em;
+  line-height: 0.82 !important;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.vault-subtitle {
+  font-size: 1.12rem;
+  margin-inline: auto;
+  max-width: 52ch;
+}
+
 .vault-hero-copy p,
 .subscription-hero p {
   color: var(--muted);
@@ -419,6 +453,7 @@ button {
 
 .vault-grid {
   gap: 18px;
+  margin-top: clamp(12px, 2vw, 24px);
 }
 
 .vault-card {
@@ -452,13 +487,15 @@ button {
 
 .module-badge {
   align-self: start;
-  background: rgba(17, 24, 39, 0.92);
+  background:
+    linear-gradient(180deg, rgba(17, 20, 24, 0.94), rgba(43, 52, 65, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   color: #fff;
-  font-size: 0.76rem;
-  font-weight: 760;
-  letter-spacing: 0.08em;
-  padding: 8px 12px;
+  font-size: 0.74rem;
+  font-weight: 780;
+  letter-spacing: 0.12em;
+  padding: 9px 14px;
   text-transform: uppercase;
   width: fit-content;
 }
@@ -476,8 +513,11 @@ button {
 }
 
 .module-lock span {
-  font-size: 0.82rem;
-  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .module-eyebrow {
@@ -1015,6 +1055,60 @@ button {
   width: 58px;
 }
 
+.module-card-head {
+  align-items: start;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.module-price {
+  align-items: end;
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+  text-align: right;
+}
+
+.module-price strong {
+  font-size: clamp(1.4rem, 2.2vw, 1.95rem);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.module-price span {
+  color: rgba(22, 22, 22, 0.52);
+  font-size: 0.78rem;
+  font-weight: 760;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.module-price-modal {
+  align-self: start;
+}
+
+.module-lock {
+  align-self: start;
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  justify-self: start;
+  padding: 8px 12px;
+  background: rgba(22, 22, 22, 0.055);
+  border-radius: 999px;
+  color: rgba(22, 22, 22, 0.58);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.module-lock-active {
+  background: rgba(47, 125, 93, 0.11);
+  color: var(--green);
+}
+
 .module-status {
   align-self: start;
   background: rgba(22, 22, 22, 0.055);
@@ -1050,10 +1144,14 @@ button {
 .module-open {
   align-items: center;
   color: #111418;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
   display: inline-flex;
-  font-weight: 720;
+  font-weight: 760;
   gap: 7px;
   margin-top: auto;
+  padding: 10px 14px;
 }
 
 .module-card {

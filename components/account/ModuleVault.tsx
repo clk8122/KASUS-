@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Check, FileCheck2, LockKeyhole, PenLine, Sparkles, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useAccount } from "@/lib/use-account";
 
@@ -12,7 +13,10 @@ type ModuleInfo = {
   eyebrow: string;
   description: string;
   points: string[];
-  badge: string;
+  price: string;
+  billing: string;
+  statusLabel: string;
+  accentLabel: string;
   accent: "graphite" | "green";
 };
 
@@ -27,7 +31,10 @@ const modules: ModuleInfo[] = [
       "Analyse de pièces et synthèse automatique",
       "Suivi des dossiers Supabase en temps réel"
     ],
-    badge: "99 EUR / mois",
+    price: "99 EUR",
+    billing: "/ mois",
+    statusLabel: "Accès offert",
+    accentLabel: "Module principal",
     accent: "green"
   },
   {
@@ -40,7 +47,10 @@ const modules: ModuleInfo[] = [
       "Exports propres pour diffusion",
       "Contenus optimisés pour vos annonces"
     ],
-    badge: "99 EUR / mois",
+    price: "99 EUR",
+    billing: "/ mois",
+    statusLabel: "Souscription requise",
+    accentLabel: "Bientôt disponible",
     accent: "graphite"
   }
 ];
@@ -50,6 +60,7 @@ type ModuleVaultProps = {
 };
 
 export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
+  const router = useRouter();
   const { activeModules, startCheckout, signOut, account } = useAccount();
   const [selected, setSelected] = useState<ModuleKey | "">("");
   const [pending, setPending] = useState<ModuleKey | "">("");
@@ -64,29 +75,24 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
     }
   }
 
+  function openModule(moduleKey: ModuleKey) {
+    setSelected("");
+    if (moduleKey === "eligia") {
+      router.push("/eligia");
+      return;
+    }
+    if (moduleKey === "studio") {
+      router.push("/studio");
+    }
+  }
+
   return (
     <section className="vault-shell">
-      <div className="vault-hero glass">
-        <div className="vault-hero-copy">
+      <div className="vault-hero glass vault-hero-landing">
+        <div className="vault-hero-copy vault-hero-copy-center">
           <p className="eyebrow">KASUS</p>
-          <h1>Un espace modulaire, propre et verrouillé par abonnement.</h1>
-          <p>
-            {account.agencyName || "Votre agence"} accède à un environnement premium où chaque module s’active séparément.
-          </p>
-        </div>
-        <div className="vault-hero-metrics">
-          <div>
-            <span>Modules</span>
-            <strong>{activeModules.length || "0"}</strong>
-          </div>
-          <div>
-            <span>Abonnement</span>
-            <strong>{activeModules.length ? "Actif" : "Verrouillé"}</strong>
-          </div>
-          <div>
-            <span>Connexion</span>
-            <strong>{mode === "locked" ? "Requise" : "En cours"}</strong>
-          </div>
+          <h1 className="vault-title">KASUS</h1>
+          <p className="vault-subtitle">{account.agencyName || "Votre agence"} accède à un espace premium où chaque module s’active séparément.</p>
         </div>
       </div>
 
@@ -97,16 +103,21 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
             <button
               className={`module-card-pro vault-card ${active ? "module-card-active" : ""}`}
               key={module.key}
-              onClick={() => setSelected(module.key)}
+              onClick={() => (active ? openModule(module.key) : setSelected(module.key))}
               type="button"
             >
-              <span className="module-float-icon">
-                {module.key === "eligia" ? <FileCheck2 size={24} /> : <PenLine size={24} />}
-              </span>
-              <span className="module-badge">{module.badge}</span>
-              <div className="module-lock">
-                <LockKeyhole size={18} />
-                <span>{active ? "Déverrouillé" : "Verrouillé"}</span>
+              <div className="module-card-head">
+                <span className="module-float-icon">
+                  {module.key === "eligia" ? <FileCheck2 size={24} /> : <PenLine size={24} />}
+                </span>
+                <div className="module-price">
+                  <strong>{module.price}</strong>
+                  <span>{module.billing}</span>
+                </div>
+              </div>
+              <div className={`module-lock ${active ? "module-lock-active" : ""}`}>
+                <LockKeyhole size={16} />
+                <span>{active ? module.accentLabel : module.statusLabel}</span>
               </div>
               <div>
                 <p className="module-eyebrow">{module.eyebrow}</p>
@@ -114,7 +125,7 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
                 <p>{module.description}</p>
               </div>
               <span className="module-open">
-                {active ? "Ouvrir" : "Voir le module"} <ArrowRight size={17} />
+                {active ? "Ouvrir" : "Découvrir"} <ArrowRight size={17} />
               </span>
             </button>
           );
@@ -132,7 +143,10 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
                 <p className="eyebrow">{currentModule.eyebrow}</p>
                 <h2>{currentModule.title}</h2>
               </div>
-              <span className="badge badge-green">{currentModule.badge}</span>
+              <div className="module-price module-price-modal">
+                <strong>{currentModule.price}</strong>
+                <span>{currentModule.billing}</span>
+              </div>
             </div>
             <p className="vault-modal-copy">{currentModule.description}</p>
             <div className="vault-points">
@@ -145,7 +159,7 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
             </div>
             {selectedIsActive ? (
               <div className="vault-modal-actions">
-                <button className="btn btn-primary" onClick={() => setSelected("")} type="button">
+                <button className="btn btn-primary" onClick={() => openModule(currentModule.key)} type="button">
                   Ouvrir le module
                 </button>
               </div>

@@ -28,6 +28,7 @@ export function InternalDossierWizard() {
   const [files, setFiles] = useState<StoredFile[]>([]);
   const [busy, setBusy] = useState(false);
   const [createdId, setCreatedId] = useState("");
+  const [createdLink, setCreatedLink] = useState("");
   const [analysisLabel, setAnalysisLabel] = useState("");
   const [error, setError] = useState("");
   const [analysisProgress, setAnalysisProgress] = useState(0);
@@ -112,6 +113,7 @@ export function InternalDossierWizard() {
       report
     });
     setCreatedId(id);
+    setCreatedLink(link);
     setAnalysisLabel(report.label);
     setStep("done");
   }
@@ -242,6 +244,7 @@ export function InternalDossierWizard() {
             <span className="badge badge-green">Dossier créé</span>
             <h1>Compte rendu prêt</h1>
             <p className="muted">{analysisLabel || "L'analyse a été enregistrée."} Le dossier est disponible dans Mes dossiers.</p>
+            {createdLink ? <div className="candidate-link-box"><code>{createdLink}</code></div> : null}
             <a className="btn btn-primary" href={`/eligia/dossiers/${createdId}`}>Ouvrir le compte rendu</a>
           </>
         ) : null}

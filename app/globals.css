@@ -1154,6 +1154,40 @@ button {
   padding: 10px 14px;
 }
 
+.candidate-link-card {
+  display: grid;
+  gap: 18px;
+  padding: clamp(20px, 3vw, 30px);
+}
+
+.candidate-link-head {
+  align-items: start;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.candidate-link-head h2 {
+  margin: 6px 0 0;
+}
+
+.candidate-link-box {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 20px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto 1fr;
+  padding: 14px 16px;
+}
+
+.candidate-link-box code {
+  color: var(--graphite);
+  font-size: 0.94rem;
+  overflow-wrap: anywhere;
+}
+
 .module-card {
   min-height: 230px;
   padding: 28px;

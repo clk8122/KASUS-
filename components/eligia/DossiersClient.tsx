@@ -67,7 +67,7 @@ export function DossiersClient() {
         <div>
           <p className="eyebrow">ELIGIA</p>
           <h1>Mes dossiers</h1>
-          <p className="muted">Les dossiers enregistrés dans Supabase apparaissent ici.</p>
+          <p className="muted">Les dossiers enregistrés apparaissent ici.</p>
         </div>
         <div className="dossier-actions">
           <button className="icon-btn" onClick={() => void loadDossiers()} type="button" aria-label="Rafraîchir">
@@ -106,7 +106,7 @@ export function DossiersClient() {
       ) : (
         <div className="empty-state glass">
           <h2>Aucun dossier enregistré</h2>
-          <p>Créez un dossier depuis l’agence ou envoyez un lien candidat pour générer la première entrée réelle.</p>
+          <p>Créez un dossier depuis l’agence ou envoyez un lien candidat pour démarrer un nouveau dossier.</p>
           <Link className="btn btn-primary" href="/eligia/creation">Créer un dossier</Link>
         </div>
       )}

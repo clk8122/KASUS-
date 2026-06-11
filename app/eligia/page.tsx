@@ -1,15 +1,12 @@
 import { AccessGate } from "@/components/auth/AccessGate";
 import { ArrowUpRight, FileCheck2, FolderPlus, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { TopBar } from "@/components/layout/TopBar";
 
 export default function EligiaMenuPage() {
   return (
     <AccessGate requiredModule="eligia" title="KASUS" subtitle="Module locatif réservé aux comptes abonnés.">
       <main className="page eligia-menu-page">
         <div className="shell">
-          <TopBar smallKasus notifications eligiaProfile />
-
           <section className="eligia-hero eligia-landing glass">
             <div className="eligia-hero-copy">
               <p className="eyebrow">Module locatif</p>
@@ -39,7 +36,7 @@ export default function EligiaMenuPage() {
                 <FileCheck2 size={24} />
                 <div>
                   <strong>Mes dossiers</strong>
-                  <p>Consulter, relancer et finaliser les candidatures enregistrées dans Supabase.</p>
+                  <p>Consulter, relancer et finaliser les candidatures enregistrées.</p>
                 </div>
                 <Link className="btn btn-compact" href="/eligia/dossiers">
                   Ouvrir <ArrowUpRight size={18} />

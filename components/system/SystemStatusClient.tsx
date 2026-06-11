@@ -21,8 +21,8 @@ export function SystemStatusClient() {
 
   const items = [
     ["OpenAI", status?.openai, "Analyse IA des dossiers"],
-    ["Supabase", status?.supabase, "Auth, base de donnees et profils"],
-    ["Storage", status?.storage, "Stockage prive des pieces"],
+    ["Base de données", status?.supabase, "Auth, données et profils"],
+    ["Fichiers", status?.storage, "Stockage privé des pièces"],
     ["Stripe", status?.stripe, "Paiement des seats supplementaires"]
   ] as const;
 

@@ -981,9 +981,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const fileContents = (await Promise.all(files.slice(0, 14).map(fileToContent))).flat();
+    const fileContents = (await Promise.all(files.slice(0, 20).map(fileToContent))).flat();
     const fileList = files.map((file, index) => `${index + 1}. ${file.name}`).join("\n");
-    const inventory = mergeInventoryWithFileNames(files.slice(0, 14), await readDocumentInventory(files.slice(0, 14), fileContents));
+    const inventory = mergeInventoryWithFileNames(files.slice(0, 20), await readDocumentInventory(files.slice(0, 20), fileContents));
     const inventoryText = inventory.documents.length
       ? inventory.documents.map((document) => `${document.fileName}: ${document.documentType} (${Math.round(document.confidence * 100)}%) - ${document.evidenceReason}`).join("\n")
       : "Inventaire indisponible.";

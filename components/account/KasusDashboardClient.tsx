@@ -19,7 +19,7 @@ export function KasusDashboardClient() {
           <span className="module-icon">
             <FileCheck2 size={24} />
           </span>
-          <span className="module-status module-status-live">Disponible</span>
+          <span className="module-status module-status-live">Ouvert</span>
           <div>
             <h2>ELIGIA</h2>
             <p>Gestion des dossiers locatifs, suivi candidat et controles documentaires.</p>
@@ -32,7 +32,7 @@ export function KasusDashboardClient() {
           <span className="module-icon">
             <PenLine size={24} />
           </span>
-          <span className="module-status">Bientot disponible</span>
+          <span className="module-status">À activer</span>
           <div>
             <h2>STUDIO</h2>
             <p>Creation d'annonces immobilieres professionnelles pretes a publier.</p>

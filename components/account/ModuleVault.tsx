@@ -29,7 +29,7 @@ const modules: ModuleInfo[] = [
     points: [
       "Création de dossiers et portail candidat",
       "Analyse de pièces et synthèse automatique",
-      "Suivi des dossiers Supabase en temps réel"
+      "Suivi des dossiers en temps réel"
     ],
     price: "99 EUR",
     billing: "/ mois",

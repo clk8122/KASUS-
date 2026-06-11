@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const maxUploadFiles = 14;
+export const maxUploadFiles = 20;
 export const maxUploadBytes = 12 * 1024 * 1024;
 export const maxTotalUploadBytes = 48 * 1024 * 1024;
 

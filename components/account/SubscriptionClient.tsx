@@ -68,7 +68,7 @@ export function SubscriptionClient() {
           </article>
           <article>
             <span>Statut</span>
-            <strong>{hasSubscription ? "Actif" : "Verrouillé"}</strong>
+            <strong>{hasSubscription ? "Actif" : "À activer"}</strong>
           </article>
         </div>
       </div>
@@ -80,7 +80,7 @@ export function SubscriptionClient() {
             <button className={`subscription-card glass ${active ? "subscription-card-active" : ""}`} key={module.key} onClick={() => (active ? undefined : void buy(module.key))} type="button">
               <div className="subscription-card-top">
                 <span className="subscription-chip">{module.tagline}</span>
-                {active ? <span className="badge badge-green">Actif</span> : <span className="badge">Verrouillé</span>}
+                {active ? <span className="badge badge-green">Actif</span> : <span className="badge">À activer</span>}
               </div>
               <div className="subscription-card-title">
                 <h2>{module.title}</h2>
@@ -95,7 +95,7 @@ export function SubscriptionClient() {
               <div className="subscription-card-bottom">
                 <span>
                   <LockKeyhole size={15} />
-                  {active ? "Déjà activé" : "Cliquer pour débloquer"}
+                  {active ? "Déjà activé" : "Ouvrir le module"}
                 </span>
                 <span className="subscription-action">
                   {active ? "Actif" : loadingModule === module.key ? "Ouverture..." : `Souscrire`}

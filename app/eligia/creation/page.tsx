@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { AccessGate } from "@/components/auth/AccessGate";
-import { TopBar } from "@/components/layout/TopBar";
 
 export default function CreationChoicePage() {
   return (
     <AccessGate requiredModule="eligia" title="KASUS" subtitle="Créer un dossier réel ou générer un lien candidat.">
       <main className="page">
         <div className="shell">
-          <TopBar backHref="/eligia" smallKasus notifications eligiaProfile />
           <section className="eligia-simple-page">
             <div className="eligia-simple-heading">
               <p className="eyebrow">ELIGIA</p>

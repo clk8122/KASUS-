@@ -69,7 +69,7 @@ export function ProfileClient() {
               <small>siège additionnel</small>
             </span>
           </div>
-          <p className="microcopy">Les informations ci-dessous sont synchronisées avec Supabase.</p>
+          <p className="microcopy">Les informations ci-dessous sont synchronisées avec votre compte.</p>
         </aside>
 
         <div className="profile-stack">

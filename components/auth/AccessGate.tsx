@@ -4,6 +4,7 @@ import { ReactNode, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { ModuleVault } from "@/components/account/ModuleVault";
 import { useAccount } from "@/lib/use-account";
+import { TopBar } from "@/components/layout/TopBar";
 
 type AccessGateProps = {
   children: ReactNode;
@@ -91,6 +92,9 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
   if (!authenticated) {
     return (
       <main className="auth-shell">
+        <div className="auth-shell-topbar">
+          <TopBar showProfileMenu={false} />
+        </div>
         <section className="auth-hero glass">
           <div className="auth-hero-copy">
             <h1 className="auth-wordmark">{title}</h1>
@@ -129,7 +133,7 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
   }
 
   if (!canUseRequiredModule && !allowWithoutSubscription) {
-    return <ModuleVault mode="locked" />;
+    return <ModuleVault mode="locked" showChrome />;
   }
 
   return <>{children}</>;

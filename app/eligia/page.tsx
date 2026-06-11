@@ -1,4 +1,5 @@
 import { AccessGate } from "@/components/auth/AccessGate";
+import { TopBar } from "@/components/layout/TopBar";
 import Link from "next/link";
 
 export default function EligiaMenuPage() {
@@ -6,6 +7,7 @@ export default function EligiaMenuPage() {
     <AccessGate requiredModule="eligia" title="KASUS">
       <main className="page eligia-menu-page">
         <div className="shell">
+          <TopBar eligiaProfile />
           <section className="eligia-simple-landing glass">
             <h1 className="eligia-page-title">ELIGIA</h1>
             <div className="eligia-quick-grid">

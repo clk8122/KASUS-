@@ -203,6 +203,11 @@ button {
   margin: 0 auto;
 }
 
+.auth-shell-topbar,
+.vault-shell-chrome {
+  width: 100%;
+}
+
 .eyebrow,
 .modules-subtitle,
 .auth-subtitle,

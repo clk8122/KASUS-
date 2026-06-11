@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && node scripts/fix-next-typegen.mjs && tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",

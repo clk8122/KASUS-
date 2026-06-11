@@ -4,6 +4,7 @@ import { ArrowRight, FileCheck2, LockKeyhole, PenLine, Sparkles, X } from "lucid
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useAccount } from "@/lib/use-account";
+import { TopBar } from "@/components/layout/TopBar";
 
 type ModuleKey = "eligia" | "studio";
 
@@ -40,9 +41,10 @@ const modules: ModuleInfo[] = [
 
 type ModuleVaultProps = {
   mode?: "landing" | "locked";
+  showChrome?: boolean;
 };
 
-export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
+export function ModuleVault({ mode = "landing", showChrome = false }: ModuleVaultProps) {
   const router = useRouter();
   const { activeModules, startCheckout, signOut, account } = useAccount();
   const [selected, setSelected] = useState<ModuleKey | "">("");
@@ -69,6 +71,11 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
 
   return (
     <section className="vault-shell">
+      {showChrome ? (
+        <div className="shell vault-shell-chrome">
+          <TopBar />
+        </div>
+      ) : null}
       <div className="vault-hero glass vault-hero-landing">
         <div className="vault-hero-copy vault-hero-copy-center">
           <h1 className="vault-title">KASUS</h1>

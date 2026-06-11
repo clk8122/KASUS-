@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { AccessGate } from "@/components/auth/AccessGate";
+import { TopBar } from "@/components/layout/TopBar";
 
 export default function CreationChoicePage() {
   return (
     <AccessGate requiredModule="eligia" title="KASUS">
       <main className="page">
         <div className="shell">
+          <TopBar eligiaProfile />
           <section className="eligia-simple-page">
             <div className="eligia-simple-heading">
               <p className="eyebrow">ELIGIA</p>

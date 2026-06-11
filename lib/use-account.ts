@@ -40,6 +40,11 @@ function getAuthHeaders(token: string) {
   };
 }
 
+function compactObject(values: Record<string, string | undefined>) {
+  const entries = Object.entries(values).filter(([, value]) => value !== undefined);
+  return entries.length ? Object.fromEntries(entries) : null;
+}
+
 function mapRole(role: string): TeamMember["role"] {
   if (role === "owner") return "Administrateur";
   if (role === "admin") return "Administrateur";
@@ -96,19 +101,27 @@ export function useAccount() {
       return;
     }
 
-    const response = await fetch("/api/account/session", {
-      headers: getAuthHeaders(accessToken)
-    });
-    const payload = (await response.json()) as SessionResponse;
-    const nextAccount = buildAccount(payload);
-    setAccount(nextAccount);
-    setAuthenticated(Boolean(payload.authenticated));
-    const paidModules = (payload.subscriptions ?? []).filter((subscription) => subscription.status === "active").map((subscription) => subscription.module_key as ModuleKey);
-    const freeModules = (payload.freeModules ?? []) as ModuleKey[];
-    const modules = Array.from(new Set([...paidModules, ...freeModules]));
-    setActiveModules(modules);
-    setHasSubscription(Boolean(payload.hasSubscription));
-    setLoading(false);
+    try {
+      const response = await fetch("/api/account/session", {
+        headers: getAuthHeaders(accessToken)
+      });
+      const payload = (await response.json()) as SessionResponse;
+      const nextAccount = buildAccount(payload);
+      setAccount(nextAccount);
+      setAuthenticated(Boolean(payload.authenticated));
+      const paidModules = (payload.subscriptions ?? []).filter((subscription) => subscription.status === "active").map((subscription) => subscription.module_key as ModuleKey);
+      const freeModules = (payload.freeModules ?? []) as ModuleKey[];
+      const modules = Array.from(new Set([...paidModules, ...freeModules]));
+      setActiveModules(modules);
+      setHasSubscription(Boolean(payload.hasSubscription));
+    } catch (error) {
+      console.warn("[account] Session injoignable, état déconnecté conservé.", error);
+      setAuthenticated(false);
+      setActiveModules([]);
+      setHasSubscription(false);
+    } finally {
+      setLoading(false);
+    }
   }, [sessionToken]);
 
   useEffect(() => {
@@ -186,30 +199,42 @@ export function useAccount() {
 
   async function updateAccount(updates: Partial<AccountState>) {
     if (!sessionToken) return;
-    await fetch("/api/account/update", {
+
+    // N'envoie que les champs réellement modifiés : un champ absent ne doit
+    // jamais arriver côté serveur, où il serait interprété comme un effacement.
+    const profile = compactObject({
+      firstName: updates.firstName,
+      lastName: updates.lastName,
+      phone: updates.phone
+    });
+    const organization = compactObject({
+      name: updates.agencyName,
+      address: updates.agencyAddress,
+      legalName: updates.legalName,
+      legalEmail: updates.legalEmail,
+      signature: updates.signature
+    });
+
+    const body: Record<string, unknown> = {};
+    if (profile) body.profile = profile;
+    if (organization) body.organization = organization;
+    if (!Object.keys(body).length) return;
+
+    const response = await fetch("/api/account/update", {
       method: "PATCH",
       headers: getAuthHeaders(sessionToken),
-      body: JSON.stringify({
-        profile: {
-          firstName: updates.firstName,
-          lastName: updates.lastName,
-          phone: updates.phone
-        },
-        organization: {
-          name: updates.agencyName,
-          address: updates.agencyAddress,
-          legalName: updates.legalName,
-          legalEmail: updates.legalEmail,
-          signature: updates.signature
-        }
-      })
+      body: JSON.stringify(body)
     });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error || "Enregistrement impossible.");
+    }
     await refresh();
   }
 
   async function updateLogo(logoDataUrl: string) {
     if (!sessionToken) return;
-    await fetch("/api/account/update", {
+    const response = await fetch("/api/account/update", {
       method: "PATCH",
       headers: getAuthHeaders(sessionToken),
       body: JSON.stringify({
@@ -218,6 +243,10 @@ export function useAccount() {
         }
       })
     });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error || "Téléversement du logo impossible.");
+    }
     await refresh();
     setAccount((current) => ({ ...current, agencyLogo: logoDataUrl }));
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { EligiaAnalysisReport, EligiaMvpPerson, EligiaDocumentCheck, EligiaDocumentInventoryItem } from "@/lib/eligia-mvp";
-import { jsonError, sanitizePositiveNumber, sanitizeText, validateUploadFiles } from "@/lib/security";
+import { jsonError, requireSameOrigin, sanitizePositiveNumber, sanitizeText, validateUploadFiles } from "@/lib/security";
 
 const supportedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
 const supportedFileTypes = new Set(["application/pdf"]);
@@ -954,12 +954,20 @@ async function readDocumentInventory(files: File[], fileContents: ResponseConten
     })
   });
 
-  if (!response.ok) return null;
+  if (!response.ok) {
+    console.warn(`[eligia] analyze-documents: inventaire IA refusé (HTTP ${response.status}).`);
+    return null;
+  }
   const payload = await response.json();
   return JSON.parse(extractOutputText(payload)) as InventoryPayload;
 }
 
 export async function POST(request: NextRequest) {
+  // Le portail candidat est anonyme : pas d'authentification possible ici.
+  // On bloque au minimum les appels cross-site pour protéger le quota IA.
+  const originError = requireSameOrigin(request);
+  if (originError) return originError;
+
   const formData = await request.formData();
   const address = sanitizeText(formData.get("address"), 280);
   const rent = sanitizePositiveNumber(formData.get("rent"), 100_000);
@@ -1120,7 +1128,8 @@ export async function POST(request: NextRequest) {
       report: checkedReport
     }, inventory.documents);
     return NextResponse.json(finalPayload);
-  } catch {
+  } catch (error) {
+    console.warn("[eligia] analyze-documents: analyse IA indisponible, repli sur l'analyse locale.", error);
     return NextResponse.json(fallback);
   }
 }

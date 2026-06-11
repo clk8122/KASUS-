@@ -11,9 +11,8 @@ export default function CreationChoicePage() {
           <TopBar eligiaProfile />
           <section className="eligia-simple-page">
             <div className="eligia-simple-heading">
-              <p className="eyebrow">ELIGIA</p>
+              <p className="page-kicker">ELIGIA</p>
               <h1>Créer un dossier</h1>
-              <p className="muted">Choisissez le mode de création.</p>
             </div>
             <div className="choice-panel glass">
               <Link className="choice-row" href="/eligia/creation/interne">

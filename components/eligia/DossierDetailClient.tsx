@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAccount } from "@/lib/use-account";
 import { downloadUnifiedPdf } from "@/lib/pdf-client";
+import { findEligiaDossier, resolveDossierRef } from "@/lib/eligia-mvp";
+import { LocalDossierDetail } from "@/components/eligia/LocalDossierDetail";
 import { type RentalAnalysis, type RentalDossier } from "@/lib/rental-flow";
 
 type DossierResponse = {
@@ -48,6 +50,9 @@ function displayRole(role: "tenant" | "guarantor") {
 }
 
 export function DossierDetailClient({ id }: { id: string }) {
+  // Résolution déterministe de la source du dossier : un dossier local ne
+  // doit jamais déclencher d'appel serveur, et inversement.
+  const ref = useMemo(() => resolveDossierRef(id), [id]);
   const { sessionToken, loading } = useAccount();
   const [data, setData] = useState<DossierResponse | null>(null);
   const [error, setError] = useState("");
@@ -57,6 +62,7 @@ export function DossierDetailClient({ id }: { id: string }) {
   const [mailCopied, setMailCopied] = useState(false);
 
   useEffect(() => {
+    if (ref.kind !== "remote") return;
     if (!sessionToken || loading) return;
     let mounted = true;
     queueMicrotask(() => {
@@ -82,7 +88,7 @@ export function DossierDetailClient({ id }: { id: string }) {
     return () => {
       mounted = false;
     };
-  }, [id, loading, sessionToken]);
+  }, [id, loading, ref.kind, sessionToken]);
 
   const applicants = useMemo(() => data?.applicants ?? [], [data]);
   const documents = useMemo(() => data?.documents ?? [], [data]);
@@ -172,18 +178,67 @@ export function DossierDetailClient({ id }: { id: string }) {
     downloadUnifiedPdf(rentalDossier, analysis);
   }
 
+  if (ref.kind === "local") {
+    const localDossier = findEligiaDossier(ref.id);
+    if (!localDossier) {
+      return (
+        <section className="empty-state glass reveal">
+          <h2>Dossier introuvable sur cet appareil</h2>
+          <p>Ce dossier a été créé localement et n'est plus présent dans le stockage de ce navigateur.</p>
+          <Link className="btn btn-primary" href="/eligia/dossiers">Retour aux dossiers</Link>
+        </section>
+      );
+    }
+    return <LocalDossierDetail dossier={localDossier} />;
+  }
+
+  if (ref.kind === "invalid") {
+    return (
+      <section className="empty-state glass reveal">
+        <h2>Identifiant de dossier invalide</h2>
+        <p>Le lien suivi ne correspond à aucun dossier connu. Vérifiez l'adresse ou repartez de la liste.</p>
+        <Link className="btn btn-primary" href="/eligia/dossiers">Retour aux dossiers</Link>
+      </section>
+    );
+  }
+
   if (busy) {
-    return <section className="empty-state glass"><p>Chargement du dossier réel...</p></section>;
+    return (
+      <section className="dossier-detail-page" aria-busy="true" aria-label="Chargement du dossier">
+        <div className="dossier-detail-heading">
+          <span className="skeleton skeleton-badge" />
+          <span className="skeleton skeleton-title skeleton-title-xl" />
+          <span className="skeleton skeleton-line" />
+        </div>
+        <div className="person-grid">
+          {[0, 1].map((index) => (
+            <div className="glass person-card skeleton-card" key={index}>
+              <span className="skeleton skeleton-badge" />
+              <span className="skeleton skeleton-title" />
+              <span className="skeleton skeleton-line" />
+              <span className="skeleton skeleton-line skeleton-line-short" />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   if (error) {
-    return <section className="empty-state glass"><p>{error}</p></section>;
+    return (
+      <section className="empty-state glass reveal">
+        <h2>Chargement impossible</h2>
+        <p>{error}</p>
+        <Link className="btn btn-primary" href="/eligia/dossiers">Retour aux dossiers</Link>
+      </section>
+    );
   }
 
   if (!dossier || !rentalDossier || !analysis) {
     return (
-      <section className="question-card glass">
-        <h1>Dossier introuvable</h1>
+      <section className="empty-state glass reveal">
+        <h2>Dossier introuvable</h2>
+        <p>Ce dossier n'existe pas ou n'appartient pas à votre organisation.</p>
         <Link className="btn btn-primary" href="/eligia/dossiers">Retour aux dossiers</Link>
       </section>
     );
@@ -238,7 +293,7 @@ export function DossierDetailClient({ id }: { id: string }) {
 
       <section className="solvency-card glass">
         <div>
-          <p className="eyebrow">Solvabilité globale</p>
+          <p className="page-kicker">Solvabilité globale</p>
           <h2>{analysis.solvencyLabel}</h2>
           <p>{analysis.summary}</p>
         </div>

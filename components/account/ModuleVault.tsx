@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowRight, FileCheck2, LockKeyhole, PenLine, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, FileCheck2, LockKeyhole, PenLine, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAccount } from "@/lib/use-account";
 import { TopBar } from "@/components/layout/TopBar";
 
@@ -11,33 +11,46 @@ type ModuleKey = "eligia" | "studio";
 type ModuleInfo = {
   key: ModuleKey;
   title: string;
+  tagline: string;
+  description: string;
+  features: string[];
   price: string;
-  billing: string;
-  statusLabel: string;
-  accentLabel: string;
-  accent: "graphite" | "green";
+  priceNote: string;
 };
 
 const modules: ModuleInfo[] = [
   {
     key: "eligia",
     title: "ELIGIA",
-    price: "99 EUR",
-    billing: "/ mois",
-    statusLabel: "Accès offert",
-    accentLabel: "Module principal",
-    accent: "green"
+    tagline: "Dossiers locatifs",
+    description: "Recevez, vérifiez et présentez des dossiers de candidature complets, sans tri manuel.",
+    features: [
+      "Lien candidat : le locataire dépose ses pièces lui-même",
+      "Lecture automatique des documents et pièces manquantes détectées",
+      "Score de solvabilité et synthèse claire, la décision reste humaine",
+      "Compte rendu prêt à transmettre au propriétaire"
+    ],
+    price: "99 €",
+    priceNote: "par mois"
   },
   {
     key: "studio",
     title: "STUDIO",
-    price: "99 EUR",
-    billing: "/ mois",
-    statusLabel: "Souscription requise",
-    accentLabel: "Bientôt disponible",
-    accent: "graphite"
+    tagline: "Annonces immobilières",
+    description: "Créez des annonces et des supports soignés, aux couleurs de votre agence.",
+    features: [
+      "Annonces professionnelles mises en page en quelques minutes",
+      "Visuels cohérents avec l'identité de votre agence",
+      "Exports prêts à publier sur vos canaux"
+    ],
+    price: "99 €",
+    priceNote: "par mois"
   }
 ];
+
+function ModuleIcon({ moduleKey, size = 26 }: { moduleKey: ModuleKey; size?: number }) {
+  return moduleKey === "eligia" ? <FileCheck2 size={size} /> : <PenLine size={size} />;
+}
 
 type ModuleVaultProps = {
   mode?: "landing" | "locked";
@@ -46,10 +59,20 @@ type ModuleVaultProps = {
 
 export function ModuleVault({ mode = "landing", showChrome = false }: ModuleVaultProps) {
   const router = useRouter();
-  const { activeModules, startCheckout, signOut, account } = useAccount();
+  const { activeModules, startCheckout, signOut } = useAccount();
   const [selected, setSelected] = useState<ModuleKey | "">("");
   const [pending, setPending] = useState<ModuleKey | "">("");
   const currentModule = useMemo(() => modules.find((item) => item.key === selected) ?? null, [selected]);
+
+  useEffect(() => {
+    if (!selected) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setSelected("");
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [selected]);
+
   async function subscribe(moduleKey: ModuleKey) {
     setPending(moduleKey);
     const payload = await startCheckout(moduleKey);
@@ -60,13 +83,7 @@ export function ModuleVault({ mode = "landing", showChrome = false }: ModuleVaul
 
   function openModule(moduleKey: ModuleKey) {
     setSelected("");
-    if (moduleKey === "eligia") {
-      router.push("/eligia");
-      return;
-    }
-    if (moduleKey === "studio") {
-      router.push("/studio");
-    }
+    router.push(moduleKey === "eligia" ? "/eligia" : "/studio");
   }
 
   return (
@@ -82,78 +99,86 @@ export function ModuleVault({ mode = "landing", showChrome = false }: ModuleVaul
         </div>
       </div>
 
-      <div className="module-grid module-grid-pro vault-grid">
+      <div className="module-tile-grid">
         {modules.map((module) => {
           const active = activeModules.includes(module.key);
           return (
             <button
-              className={`module-card-pro vault-card ${active ? "module-card-active" : ""}`}
+              className={`module-tile ${active ? "module-tile-active" : ""}`}
               key={module.key}
               onClick={() => (active ? openModule(module.key) : setSelected(module.key))}
               type="button"
             >
-              <div className="module-card-head">
-                <span className="module-float-icon">
-                  {module.key === "eligia" ? <FileCheck2 size={24} /> : <PenLine size={24} />}
-                </span>
-                <div className="module-price">
-                  <strong>{module.price}</strong>
-                  <span>{module.billing}</span>
-                </div>
-              </div>
-              <div className={`module-lock ${active ? "module-lock-active" : ""}`}>
-                <LockKeyhole size={16} />
-                <span>{active ? module.accentLabel : module.statusLabel}</span>
-              </div>
-              <h2>{module.title}</h2>
-              <span className="module-open">
-                {active ? "Ouvrir" : "Découvrir"} <ArrowRight size={17} />
+              <span className="module-tile-icon">
+                <ModuleIcon moduleKey={module.key} />
               </span>
+              <div className="module-tile-copy">
+                <h2>{module.title}</h2>
+                <p>{module.tagline}</p>
+              </div>
+              <div className="module-tile-foot">
+                {active ? (
+                  <span className="module-tile-state module-tile-state-on">
+                    <Check size={14} /> Actif
+                  </span>
+                ) : (
+                  <span className="module-tile-state">
+                    <LockKeyhole size={14} /> Verrouillé
+                  </span>
+                )}
+                <span className="module-tile-go">
+                  {active ? "Ouvrir" : "Découvrir"} <ArrowRight size={16} />
+                </span>
+              </div>
             </button>
           );
         })}
       </div>
 
       {currentModule ? (
-        <div className="vault-modal-scrim" role="dialog" aria-modal="true">
-          <section className={`vault-modal glass vault-modal-${currentModule.accent}`}>
+        <div
+          aria-modal="true"
+          className="vault-modal-scrim"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setSelected("");
+          }}
+          role="dialog"
+        >
+          <section className="module-sheet">
             <button aria-label="Fermer" className="vault-close" onClick={() => setSelected("")} type="button">
-              <X size={18} />
+              <X size={17} />
             </button>
-            <div className="vault-modal-header">
+            <span className="module-tile-icon module-sheet-icon">
+              <ModuleIcon moduleKey={currentModule.key} size={30} />
+            </span>
+            <div className="module-sheet-heading">
               <h2>{currentModule.title}</h2>
-              <div className="module-price module-price-modal">
-                <strong>{currentModule.price}</strong>
-                <span>{currentModule.billing}</span>
-              </div>
+              <p>{currentModule.description}</p>
             </div>
-            {currentModule && activeModules.includes(currentModule.key) ? (
-              <div className="vault-modal-actions">
-                <button className="btn btn-primary" onClick={() => openModule(currentModule.key)} type="button">
-                  Ouvrir le module
-                </button>
+            <ul className="module-sheet-features">
+              {currentModule.features.map((feature) => (
+                <li key={feature}>
+                  <span className="module-sheet-check">
+                    <Check size={14} />
+                  </span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <div className="module-sheet-footer">
+              <div className="module-sheet-price">
+                <strong>{currentModule.price}</strong>
+                <span>{currentModule.priceNote}</span>
               </div>
-            ) : (
-              <>
-                <div className="vault-modal-actions">
-                  <button
-                    className="btn btn-primary"
-                    disabled={pending === currentModule.key}
-                    onClick={() => void subscribe(currentModule.key)}
-                    type="button"
-                  >
-                    {pending === currentModule.key ? "Ouverture..." : `Souscrire à ${currentModule.title}`}
-                  </button>
-                  <button className="btn" onClick={() => setSelected("")} type="button">
-                    Continuer sans ouvrir
-                  </button>
-                </div>
-                <div className="vault-note">
-                  <Sparkles size={16} />
-                  <span>Chaque module est facturé séparément, à 99 EUR / mois.</span>
-                </div>
-              </>
-            )}
+              <button
+                className="btn btn-primary"
+                disabled={pending === currentModule.key}
+                onClick={() => void subscribe(currentModule.key)}
+                type="button"
+              >
+                {pending === currentModule.key ? "Ouverture..." : `S'abonner à ${currentModule.title}`}
+              </button>
+            </div>
           </section>
         </div>
       ) : null}

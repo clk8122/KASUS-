@@ -1,10 +1,10 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Check, FileArchive, Upload } from "lucide-react";
-import type { CSSProperties } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { AnalysisLoader } from "@/components/eligia/AnalysisLoader";
 import { validateUploadFile } from "@/lib/document-processing";
-import { buildCandidateLink, EligiaAnalysisReport, EligiaMvpPerson, saveEligiaDossier } from "@/lib/eligia-mvp";
+import { buildCandidateLink, createLocalDossierId, EligiaAnalysisReport, EligiaMvpPerson, saveEligiaDossier } from "@/lib/eligia-mvp";
 
 type Step = "address" | "rent" | "files" | "confirm" | "done";
 
@@ -14,12 +14,6 @@ type StoredFile = {
   size: number;
   file: File;
 };
-
-function formatAnalysisTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
-}
 
 export function InternalDossierWizard() {
   const [step, setStep] = useState<Step>("address");
@@ -32,7 +26,6 @@ export function InternalDossierWizard() {
   const [analysisLabel, setAnalysisLabel] = useState("");
   const [error, setError] = useState("");
   const [analysisProgress, setAnalysisProgress] = useState(0);
-  const [analysisSeconds, setAnalysisSeconds] = useState(0);
   const [pendingPeople, setPendingPeople] = useState<EligiaMvpPerson[]>([]);
   const [pendingReport, setPendingReport] = useState<EligiaAnalysisReport | null>(null);
 
@@ -40,14 +33,6 @@ export function InternalDossierWizard() {
     const order: Step[] = ["address", "rent", "files", "confirm", "done"];
     return Math.round(((order.indexOf(step) + 1) / order.length) * 100);
   }, [step]);
-
-  useEffect(() => {
-    if (!busy) return;
-    const timer = window.setInterval(() => {
-      setAnalysisSeconds((current) => current + 1);
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [busy]);
 
   function previous() {
     if (step === "rent") setStep("address");
@@ -58,7 +43,6 @@ export function InternalDossierWizard() {
     setBusy(true);
     setError("");
     setAnalysisProgress(10);
-    setAnalysisSeconds(0);
     const loadingSteps = [
       { progress: 28 },
       { progress: 48 },
@@ -77,14 +61,17 @@ export function InternalDossierWizard() {
         method: "POST",
         body: formData
       });
-      if (!response.ok) throw new Error("Analyse impossible");
+      if (!response.ok) {
+        const failure = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(failure?.error || "L'analyse n'a pas pu aboutir. Vérifiez les fichiers puis relancez.");
+      }
       const payload = (await response.json()) as { people: EligiaMvpPerson[]; report: EligiaAnalysisReport };
       setPendingPeople(payload.people);
       setPendingReport(payload.report);
       setAnalysisProgress(100);
       setStep("confirm");
-    } catch {
-      setError("L'analyse n'a pas pu aboutir. Vérifiez les fichiers puis relancez.");
+    } catch (thrown) {
+      setError(thrown instanceof Error ? thrown.message : "L'analyse n'a pas pu aboutir. Vérifiez les fichiers puis relancez.");
     } finally {
       timers.forEach(window.clearTimeout);
       setBusy(false);
@@ -92,7 +79,7 @@ export function InternalDossierWizard() {
   }
 
   function finish(people: EligiaMvpPerson[], report: EligiaAnalysisReport) {
-    const id = `created-${Date.now()}`;
+    const id = createLocalDossierId();
     const link = buildCandidateLink(id);
     const candidates = people.filter((person) => person.role === "Locataire").map((person) => person.name).join(", ") || "À qualifier";
     const completeness = Math.round(report.completeness);
@@ -131,8 +118,8 @@ export function InternalDossierWizard() {
       <div className="question-card glass">
         {step === "address" ? (
           <>
-            <p className="eyebrow">Adresse du bien</p>
-            <h1>Quel est le bien concerne ?</h1>
+            <p className="page-kicker">Adresse du bien</p>
+            <h1>Quel est le bien concerné ?</h1>
             <input className="question-input" onChange={(event) => setAddress(event.target.value)} placeholder="12 rue du Parc, 54000 Nancy" value={address} />
             <button className="btn btn-primary" disabled={address.trim().length < 4} onClick={() => setStep("rent")} type="button">
               Continuer <ArrowRight size={18} />
@@ -142,7 +129,7 @@ export function InternalDossierWizard() {
 
         {step === "rent" ? (
           <>
-            <p className="eyebrow">Loyer</p>
+            <p className="page-kicker">Loyer</p>
             <h1>Quel est le montant du loyer ?</h1>
             <input className="question-input" inputMode="decimal" onChange={(event) => setRent(event.target.value)} placeholder="780" value={rent} />
             <button className="btn btn-primary" disabled={Number(rent) <= 0} onClick={() => setStep("files")} type="button">
@@ -154,39 +141,10 @@ export function InternalDossierWizard() {
         {step === "files" ? (
           <>
             {busy ? (
-              <div className="candidate-analysis-loader">
-                <div className="analysis-loader-ring" style={{ "--analysis-progress": `${analysisProgress}%` } as CSSProperties}>
-                  <div className="analysis-loader-icon"><FileArchive size={34} /></div>
-                </div>
-                <p className="eyebrow">Etude du dossier</p>
-                <h1>Analyse en cours</h1>
-                <div className="analysis-timer" aria-label="Temps d'analyse">
-                  <span>Temps écoulé</span>
-                  <strong>{formatAnalysisTime(analysisSeconds)}</strong>
-                </div>
-                <div className="progress"><span style={{ width: `${analysisProgress}%` }} /></div>
-                <p className="muted">Le compte rendu se prépare.</p>
-                <div className="analysis-hud-grid analysis-hud-grid-agent">
-                  <article>
-                    <small>Fichiers</small>
-                    <strong>{files.length}</strong>
-                    <span>pièce(s) à classer</span>
-                  </article>
-                  <article>
-                    <small>Loyer</small>
-                    <strong>{Number(rent).toLocaleString("fr-FR")} EUR</strong>
-                    <span>charges comprises</span>
-                  </article>
-                  <article>
-                    <small>Suite</small>
-                    <strong>Rôles</strong>
-                    <span>vous confirmerez locataires et garants</span>
-                  </article>
-                </div>
-              </div>
+              <AnalysisLoader fileCount={files.length} progress={analysisProgress} />
             ) : (
               <>
-                <p className="eyebrow">Pièces justificatives</p>
+                <p className="page-kicker">Pièces justificatives</p>
                 <h1>Téléversez tous les fichiers</h1>
                 <label className="upload-zone agency-upload-zone">
                   <Upload size={32} />
@@ -220,7 +178,7 @@ export function InternalDossierWizard() {
 
         {step === "confirm" ? (
           <>
-            <p className="eyebrow">Personnes détectées</p>
+            <p className="page-kicker">Personnes détectées</p>
             <h1>Confirmez les rôles avant d'enregistrer</h1>
             <p className="muted">L'IA propose les noms trouvés dans les pièces. Vous pouvez corriger le nom et choisir Locataire ou Garant.</p>
             <div className="applicant-builder-grid">

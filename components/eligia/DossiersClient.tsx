@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, RefreshCw } from "lucide-react";
+import { FolderOpen, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "@/lib/use-account";
+import { deleteEligiaDossier, readEligiaDossiers, type EligiaMvpDossier } from "@/lib/eligia-mvp";
 
 type DossierRow = {
   id: string;
@@ -17,14 +18,63 @@ type DossierRow = {
   created_at: string;
 };
 
+type UnifiedDossier = {
+  id: string;
+  address: string;
+  rent: number;
+  status: string;
+  completeness: number;
+  indicator: string;
+  summary: string;
+  createdAt: string;
+  origin: "serveur" | "appareil";
+};
+
+function fromRemote(row: DossierRow): UnifiedDossier {
+  return {
+    id: row.id,
+    address: row.address,
+    rent: Number(row.rent),
+    status: row.status,
+    completeness: row.completeness,
+    indicator: row.solvency_label ?? "Analyse en attente",
+    summary: row.summary,
+    createdAt: row.created_at,
+    origin: "serveur"
+  };
+}
+
+function fromLocal(dossier: EligiaMvpDossier): UnifiedDossier {
+  return {
+    id: dossier.id,
+    address: dossier.address,
+    rent: dossier.rent,
+    status: dossier.status,
+    completeness: dossier.completeness,
+    indicator: dossier.indicator,
+    summary: dossier.summary,
+    createdAt: dossier.createdAt,
+    origin: "appareil"
+  };
+}
+
 export function DossiersClient() {
   const { sessionToken, loading, authenticated, activeModules } = useAccount();
-  const [dossiers, setDossiers] = useState<DossierRow[]>([]);
+  const [remoteDossiers, setRemoteDossiers] = useState<UnifiedDossier[]>([]);
+  const [localDossiers, setLocalDossiers] = useState<UnifiedDossier[]>([]);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(true);
+
+  const loadLocalDossiers = useCallback(() => {
+    setLocalDossiers(readEligiaDossiers().map(fromLocal));
+  }, []);
 
   const loadDossiers = useCallback(async () => {
-    if (!sessionToken) return;
+    loadLocalDossiers();
+    if (!sessionToken) {
+      setBusy(false);
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -37,13 +87,13 @@ export function DossiersClient() {
       if (!response.ok) {
         throw new Error(payload.error || "Chargement impossible.");
       }
-      setDossiers(payload.dossiers ?? []);
+      setRemoteDossiers((payload.dossiers ?? []).map(fromRemote));
     } catch (thrown) {
       setError(thrown instanceof Error ? thrown.message : "Chargement impossible.");
     } finally {
       setBusy(false);
     }
-  }, [sessionToken]);
+  }, [loadLocalDossiers, sessionToken]);
 
   useEffect(() => {
     if (!loading && authenticated && activeModules.includes("eligia")) {
@@ -53,25 +103,25 @@ export function DossiersClient() {
     }
   }, [activeModules, authenticated, loadDossiers, loading]);
 
-  if (busy) {
-    return (
-      <section className="empty-state glass">
-        <p>Chargement des dossiers réels...</p>
-      </section>
-    );
+  function removeLocal(id: string) {
+    deleteEligiaDossier(id);
+    loadLocalDossiers();
   }
+
+  const dossiers = [...localDossiers, ...remoteDossiers].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   return (
     <section className="dossiers-page">
-      <div className="dossiers-heading">
+      <div className="dossiers-heading reveal">
         <div>
-          <p className="eyebrow">ELIGIA</p>
+          <p className="page-kicker">ELIGIA</p>
           <h1>Mes dossiers</h1>
-          <p className="muted">Les dossiers enregistrés apparaissent ici.</p>
         </div>
         <div className="dossier-actions">
           <button className="icon-btn" onClick={() => void loadDossiers()} type="button" aria-label="Rafraîchir">
-            <RefreshCw size={18} />
+            <RefreshCw className={busy ? "spin" : undefined} size={18} />
           </button>
           <Link aria-label="Créer un dossier" className="icon-btn" href="/eligia/creation">
             <Plus size={19} />
@@ -79,34 +129,61 @@ export function DossiersClient() {
         </div>
       </div>
 
-      {error ? <p className="notice">{error}</p> : null}
+      {error ? <p className="notice reveal">{error}</p> : null}
 
-      {dossiers.length ? (
+      {busy && !dossiers.length ? (
+        <div className="dossiers-grid" aria-busy="true" aria-label="Chargement des dossiers">
+          {[0, 1, 2, 3].map((index) => (
+            <div className="glass dossier-card skeleton-card" key={index}>
+              <span className="skeleton skeleton-badge" />
+              <span className="skeleton skeleton-title" />
+              <span className="skeleton skeleton-line" />
+              <span className="skeleton skeleton-line skeleton-line-short" />
+            </div>
+          ))}
+        </div>
+      ) : dossiers.length ? (
         <div className="dossiers-grid">
-          {dossiers.map((dossier) => (
-            <article className="glass dossier-card" key={dossier.id}>
+          {dossiers.map((dossier, index) => (
+            <article className={`glass dossier-card reveal reveal-${Math.min(index + 1, 6)}`} key={dossier.id}>
               <div className="panel-heading">
                 <div>
                   <span className="badge">{dossier.status}</span>
-                  <h2>{dossier.address}</h2>
+                  {dossier.origin === "appareil" ? <span className="badge badge-device">Sur cet appareil</span> : null}
+                  <h2>{dossier.address || "Adresse à renseigner"}</h2>
                 </div>
                 <span className="badge badge-green">{dossier.completeness}%</span>
               </div>
               <p className="muted">{dossier.summary}</p>
               <div className="dossier-meta">
-                <span>{Math.round(Number(dossier.rent))} EUR / mois</span>
-                <span>{dossier.solvency_label ?? "Analyse en attente"}</span>
+                <span>{Math.round(dossier.rent)} EUR / mois</span>
+                <span>{dossier.indicator}</span>
               </div>
-              <Link className="btn btn-primary btn-compact" href={`/eligia/dossiers/${dossier.id}`}>
-                Ouvrir le dossier
-              </Link>
+              <div className="dossier-actions">
+                <Link className="btn btn-primary btn-compact" href={`/eligia/dossiers/${dossier.id}`}>
+                  Ouvrir le dossier
+                </Link>
+                {dossier.origin === "appareil" ? (
+                  <button
+                    aria-label="Supprimer ce dossier local"
+                    className="icon-btn delete-dossier-btn"
+                    onClick={() => removeLocal(dossier.id)}
+                    type="button"
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                ) : null}
+              </div>
             </article>
           ))}
         </div>
       ) : (
-        <div className="empty-state glass">
-          <h2>Aucun dossier enregistré</h2>
-          <p>Créez un dossier depuis l’agence ou envoyez un lien candidat pour démarrer un nouveau dossier.</p>
+        <div className="empty-state glass reveal">
+          <span className="empty-state-icon">
+            <FolderOpen size={26} />
+          </span>
+          <h2>Aucun dossier pour le moment</h2>
+          <p>Créez un dossier depuis l’agence ou envoyez un lien candidat pour démarrer.</p>
           <Link className="btn btn-primary" href="/eligia/creation">Créer un dossier</Link>
         </div>
       )}

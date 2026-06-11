@@ -28,14 +28,18 @@ export function SystemStatusClient() {
 
   return (
     <section className="profile-page">
-      <div className="profile-heading">
-        <p className="eyebrow">Systeme</p>
+      <div className="profile-heading reveal">
+        <p className="page-kicker">Système</p>
         <h1>Configuration</h1>
       </div>
       <div className="profile-secondary-grid">
-        {items.map(([label, ready, description]) => (
-          <div className="glass panel profile-panel" key={label}>
-            <span className={`badge ${ready ? "badge-green" : "badge-red"}`}>{ready ? "Configure" : "A configurer"}</span>
+        {items.map(([label, ready, description], index) => (
+          <div className={`glass panel profile-panel reveal reveal-${Math.min(index + 1, 6)}`} key={label}>
+            {status === null ? (
+              <span className="skeleton skeleton-badge" />
+            ) : (
+              <span className={`badge ${ready ? "badge-green" : "badge-red"}`}>{ready ? "Configuré" : "À configurer"}</span>
+            )}
             <h2>{label}</h2>
             <p className="muted">{description}</p>
           </div>

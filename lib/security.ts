@@ -60,8 +60,13 @@ export function getPublicBaseUrl(request: NextRequest) {
 export function requireSameOrigin(request: NextRequest) {
   const origin = request.headers.get("origin");
   if (!origin) return null;
-  const allowed = getPublicBaseUrl(request);
-  return origin === allowed ? null : jsonError("Origine non autorisee.", 403);
+  // Bloque uniquement les appels cross-site : l'origine doit correspondre
+  // soit à l'hôte qui sert réellement la requête (localhost, préprod...),
+  // soit à l'URL publique configurée.
+  const allowed = new Set([getPublicBaseUrl(request), request.nextUrl.origin]);
+  if (allowed.has(origin)) return null;
+  console.warn(`[security] Origine refusée: ${origin} (attendu: ${[...allowed].join(" ou ")})`);
+  return jsonError("Origine non autorisée.", 403);
 }
 
 export function requireBearerToken(request: NextRequest, expected: string | undefined) {

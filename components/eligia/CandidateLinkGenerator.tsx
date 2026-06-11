@@ -2,7 +2,7 @@
 
 import { ArrowRight, Check, Copy, Link2 } from "lucide-react";
 import { useState } from "react";
-import { buildCandidateLink, saveEligiaDossier } from "@/lib/eligia-mvp";
+import { buildCandidateLink, createLocalDossierId, saveEligiaDossier } from "@/lib/eligia-mvp";
 
 export function CandidateLinkGenerator() {
   const [address, setAddress] = useState("");
@@ -18,7 +18,7 @@ export function CandidateLinkGenerator() {
   }
 
   function createLink() {
-    const id = `created-${Date.now()}`;
+    const id = createLocalDossierId();
     const link = buildCandidateLink(id);
     saveEligiaDossier({
       id,
@@ -43,7 +43,7 @@ export function CandidateLinkGenerator() {
   return (
     <section className="question-flow">
       <div className="builder-heading">
-        <p className="eyebrow">ELIGIA</p>
+        <p className="page-kicker">ELIGIA</p>
         <h1>Générer un lien candidat</h1>
         <p>Renseignez l’adresse et le loyer. Le lien ouvre le portail candidat prêt à compléter.</p>
       </div>
@@ -71,7 +71,7 @@ export function CandidateLinkGenerator() {
         <section className="glass panel candidate-link-card">
           <div className="candidate-link-head">
             <div>
-              <p className="eyebrow">Lien candidat</p>
+              <p className="page-kicker">Lien candidat</p>
               <h2>À transmettre au locataire</h2>
               <p>Ce lien ouvre le parcours candidat pour compléter le dossier.</p>
             </div>

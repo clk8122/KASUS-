@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowRight, Check, FileArchive, RotateCcw, Upload } from "lucide-react";
+import { ArrowRight, Check, RotateCcw, Upload } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import type { CSSProperties } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { AnalysisLoader } from "@/components/eligia/AnalysisLoader";
 import { ApplicantRole, HousingStatus, WorkStatus, getDocumentRules, housingStatusLabels, workStatusLabels } from "@/data/rental-documents";
 import { validateUploadFile } from "@/lib/document-processing";
 import { ACCOUNT_STORAGE_KEY, defaultAccountState } from "@/lib/account-store";
@@ -31,14 +31,17 @@ type CandidateFile = {
 const workChoices: WorkStatus[] = ["cdi", "cdd", "civil-servant", "self-employed", "micro-entrepreneur", "retired", "job-seeker", "rsa", "student", "apprentice", "other"];
 const housingChoices: HousingStatus[] = ["tenant", "owner", "hosted", "unknown"];
 
-function formatAnalysisTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(rest).padStart(2, "0")}`;
-}
-
 function storageKey(id: string) {
   return `eligia-candidate-portal-${id || "pending"}`;
+}
+
+// L'état du portail vit en localStorage : le serveur ne peut pas le connaître.
+// Ce store garantit un premier rendu identique côté serveur et client
+// (écran de préparation), puis bascule sur l'état réel une fois monté.
+const emptySubscribe = () => () => {};
+
+function useHydrated() {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
 }
 
 function defaultState(dossier: EligiaMvpDossier | null): StoredCandidateState {
@@ -73,6 +76,7 @@ function createPeople(applicants: RentalApplicant[]): EligiaMvpPerson[] {
 }
 
 export function CandidatePortalFlow() {
+  const hydrated = useHydrated();
   const params = useSearchParams();
   const dossierId = params.get("dossier") ?? "pending";
   const [agencyName] = useState(() => {
@@ -97,23 +101,15 @@ export function CandidatePortalFlow() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [missing, setMissing] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
-  const [analysisSeconds, setAnalysisSeconds] = useState(0);
   const [uploadedFiles, setUploadedFiles] = useState<CandidateFile[]>([]);
   const [detectedPeople, setDetectedPeople] = useState<EligiaMvpPerson[]>([]);
   const [analysisReport, setAnalysisReport] = useState<EligiaAnalysisReport | null>(null);
   const [analysisError, setAnalysisError] = useState("");
+  const [savedNotice, setSavedNotice] = useState("");
 
   useEffect(() => {
     window.localStorage.setItem(storageKey(dossierId), JSON.stringify(state));
   }, [dossierId, state]);
-
-  useEffect(() => {
-    if (state.step !== "analysis") return;
-    const timer = window.setInterval(() => {
-      setAnalysisSeconds((current) => current + 1);
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [state.step]);
 
   const analysis = useMemo<RentalDossier>(() => ({
     address: state.address,
@@ -191,7 +187,8 @@ export function CandidatePortalFlow() {
 
   function saveLater() {
     window.localStorage.setItem(storageKey(dossierId), JSON.stringify(state));
-    alert("Votre dossier est enregistré sur cet appareil. Vous pouvez revenir avec le même lien.");
+    setSavedNotice("Votre dossier est enregistré sur cet appareil. Vous pouvez revenir avec le même lien.");
+    window.setTimeout(() => setSavedNotice(""), 4000);
   }
 
   function checkBeforeSubmit() {
@@ -204,7 +201,6 @@ export function CandidatePortalFlow() {
   async function runDocumentAnalysis(currentMissing: string[]) {
     setAnalysisError("");
     setProgress(8);
-    setAnalysisSeconds(0);
     const loadingSteps = [
       { progress: 22 },
       { progress: 42 },
@@ -227,7 +223,10 @@ export function CandidatePortalFlow() {
         method: "POST",
         body: formData
       });
-      if (!response.ok) throw new Error("Analyse impossible");
+      if (!response.ok) {
+        const failure = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(failure?.error || "Analyse impossible");
+      }
       const payload = (await response.json()) as { people: EligiaMvpPerson[]; report: EligiaAnalysisReport };
       const fallbackPeople = createPeople(state.applicants);
       const people = payload.people.length ? payload.people : fallbackPeople;
@@ -242,8 +241,12 @@ export function CandidatePortalFlow() {
       });
       setProgress(100);
       patchState({ step: "contact" });
-    } catch {
-      setAnalysisError("L'analyse IA n'a pas pu aboutir. Le dossier n'a pas été enregistré comme analyse finale.");
+    } catch (thrown) {
+      setAnalysisError(
+        thrown instanceof Error && thrown.message !== "Analyse impossible"
+          ? thrown.message
+          : "L'analyse IA n'a pas pu aboutir. Le dossier n'a pas été enregistré comme analyse finale."
+      );
       setProgress(100);
     } finally {
       timers.forEach(window.clearTimeout);
@@ -291,6 +294,18 @@ export function CandidatePortalFlow() {
     };
     saveEligiaDossier(updated);
     patchState({ step: "result", submitted: true });
+  }
+
+  if (!hydrated) {
+    return (
+      <section className="candidate-flow glass">
+        <div className="candidate-question">
+          <span className="skeleton skeleton-badge" />
+          <span className="skeleton skeleton-title" />
+          <span className="skeleton skeleton-line" />
+        </div>
+      </section>
+    );
   }
 
   if (!activeApplicant) return null;
@@ -372,7 +387,7 @@ export function CandidatePortalFlow() {
         <div className="candidate-documents">
           <div className="panel-heading">
             <div>
-              <p className="eyebrow">Pièces à transmettre</p>
+              <p className="page-kicker">Pièces à transmettre</p>
               <h2>{applicantFullName(activeApplicant)}</h2>
             </div>
             <button className="btn btn-compact" onClick={() => patchState({ step: "profile" })} type="button">Modifier ce profil</button>
@@ -425,6 +440,7 @@ export function CandidatePortalFlow() {
             <button className="btn" onClick={saveLater} type="button">Enregistrer et continuer plus tard</button>
             <button className="btn btn-primary" onClick={checkBeforeSubmit} type="button">Soumettre ma demande <ArrowRight size={18} /></button>
           </div>
+          {savedNotice ? <p className="notice">{savedNotice}</p> : null}
         </div>
       ) : null}
 
@@ -442,35 +458,11 @@ export function CandidatePortalFlow() {
       ) : null}
 
       {state.step === "analysis" ? (
-        <div className="candidate-question candidate-analysis-loader">
-          <div className="analysis-loader-ring" style={{ "--analysis-progress": `${progress}%` } as CSSProperties}>
-            <div className="analysis-loader-icon"><FileArchive size={34} /></div>
-          </div>
-          <span className="candidate-step-kicker">Analyse sécurisée</span>
-          <h2>Votre dossier est en cours d'analyse</h2>
-          <div className="analysis-timer" aria-label="Temps d'analyse">
-            <span>Temps écoulé</span>
-            <strong>{formatAnalysisTime(analysisSeconds)}</strong>
-          </div>
-          <div className="progress"><span style={{ width: `${progress}%` }} /></div>
-          <p>Le dossier reste ouvert pendant la préparation du compte rendu.</p>
-          <div className="analysis-hud-grid">
-            <article>
-              <small>Dossier</small>
-              <strong>{uploadedFiles.length || state.applicants.reduce((sum, applicant) => sum + applicant.documents.length, 0)}</strong>
-              <span>pièce(s) transmise(s)</span>
-            </article>
-            <article>
-              <small>Loyer</small>
-              <strong>{state.rent ? `${state.rent.toLocaleString("fr-FR")} EUR` : "Loyer"}</strong>
-              <span>charges comprises</span>
-            </article>
-            <article>
-              <small>Suite</small>
-              <strong>Validation</strong>
-              <span>vous confirmerez les personnes détectées</span>
-            </article>
-          </div>
+        <div className="candidate-question">
+          <AnalysisLoader
+            fileCount={uploadedFiles.length || state.applicants.reduce((sum, applicant) => sum + applicant.documents.length, 0)}
+            progress={progress}
+          />
           {analysisError ? <p className="microcopy error-text">{analysisError}</p> : null}
           {analysisError ? <button className="btn btn-primary" onClick={() => void runDocumentAnalysis(missing)} type="button">Relancer l'analyse</button> : null}
         </div>

@@ -1,18 +1,23 @@
 :root {
-  --background: #eef3f8;
-  --surface: rgba(255, 255, 255, 0.62);
-  --surface-strong: rgba(255, 255, 255, 0.82);
-  --text: #101824;
-  --muted: #627083;
-  --line: rgba(255, 255, 255, 0.62);
-  --graphite: #111827;
-  --green: #178463;
-  --red: #b84a5a;
-  --blue: #275a8f;
-  --blue-soft: #dcecff;
-  --shadow: 0 28px 90px rgba(16, 24, 36, 0.12);
-  --glass-border: rgba(255, 255, 255, 0.72);
-  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  --background: #f5f5f7;
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-strong: #ffffff;
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --line: rgba(0, 0, 0, 0.08);
+  --graphite: #1d1d1f;
+  --green: #0d8050;
+  --red: #c2444f;
+  --blue: #0066cc;
+  --blue-soft: #eaf2fb;
+  --shadow: 0 1px 1px rgba(0, 0, 0, 0.03), 0 16px 40px rgba(0, 0, 0, 0.06);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.3, 0.4, 1);
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 480ms;
 }
 
 * {
@@ -28,14 +33,25 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(39, 90, 143, 0.18), transparent 28rem),
-    radial-gradient(circle at 82% 12%, rgba(23, 132, 99, 0.15), transparent 26rem),
-    radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.96), transparent 34rem),
-    linear-gradient(180deg, #f7fbff 0%, #edf3f8 46%, #e9f0f7 100%),
-    var(--background);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", sans-serif;
-  letter-spacing: 0;
+  background: linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 280px);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  letter-spacing: -0.008em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv01" on, "cv03" on, "cv04" on;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(0, 102, 204, 0.16);
+}
+
+h1,
+h2,
+h3 {
+  color: var(--text);
+  letter-spacing: -0.025em;
+  text-wrap: balance;
 }
 
 a {
@@ -72,12 +88,7 @@ button {
 }
 
 .home-page::before {
-  background:
-    radial-gradient(circle at 12% 8%, rgba(39, 90, 143, 0.18), transparent 28rem),
-    radial-gradient(circle at 82% 12%, rgba(23, 132, 99, 0.15), transparent 26rem),
-    radial-gradient(circle at 50% 100%, rgba(255, 255, 255, 0.96), transparent 34rem),
-    linear-gradient(180deg, #f7fbff 0%, #edf3f8 46%, #e9f0f7 100%);
-  background-size: auto, auto, auto, auto;
+  background: linear-gradient(180deg, #fbfbfd 0%, #f5f5f7 100%);
   content: "";
   inset: 0;
   position: absolute;
@@ -214,12 +225,10 @@ button {
 .auth-pills,
 .auth-visual,
 .auth-card-note,
-.vault-subtitle,
 .module-eyebrow,
 .eligia-hero-pills,
 .subscription-chip,
-.subscription-footer-note,
-.microcopy {
+.subscription-footer-note {
   display: none !important;
 }
 
@@ -242,9 +251,7 @@ button {
 .auth-hero::before,
 .vault-hero::before,
 .subscription-hero::before {
-  background:
-    radial-gradient(circle at 80% 12%, rgba(39, 90, 143, 0.16), transparent 20rem),
-    radial-gradient(circle at 14% 78%, rgba(23, 132, 99, 0.15), transparent 18rem);
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.9), transparent 24rem);
   content: "";
   inset: 0;
   pointer-events: none;
@@ -1579,12 +1586,7 @@ button {
 }
 
 .eligia-menu-page {
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(246, 244, 238, 0.88)),
-    linear-gradient(90deg, rgba(17, 20, 24, 0.035) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(17, 20, 24, 0.025) 1px, transparent 1px),
-    #f8f6f0;
-  background-size: auto, 92px 92px, 92px 92px, auto;
+  background: transparent;
   min-height: 100vh;
 }
 
@@ -3342,4 +3344,1370 @@ button {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* =========================================================================
+   KASUS - Couche de finition premium
+   Animations, micro-interactions, états de chargement et identité.
+   Déclarée en fin de fichier pour maîtriser la cascade sans réécrire
+   les règles historiques.
+   ========================================================================= */
+
+.page-kicker {
+  align-items: center;
+  color: rgba(17, 24, 39, 0.46);
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 760;
+  gap: 8px;
+  letter-spacing: 0.18em;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.page-kicker::before {
+  background: linear-gradient(90deg, var(--green), rgba(23, 132, 99, 0.2));
+  border-radius: 999px;
+  content: "";
+  display: inline-block;
+  height: 2px;
+  width: 22px;
+}
+
+/* --- Apparitions progressives ------------------------------------------ */
+
+@keyframes kasusReveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  animation: kasusReveal var(--dur-slow) var(--ease-out) both;
+}
+
+.reveal-1 { animation-delay: 60ms; }
+.reveal-2 { animation-delay: 120ms; }
+.reveal-3 { animation-delay: 180ms; }
+.reveal-4 { animation-delay: 240ms; }
+.reveal-5 { animation-delay: 300ms; }
+.reveal-6 { animation-delay: 360ms; }
+
+/* Pages existantes : entrée douce sans toucher au markup. */
+.question-card,
+.auth-hero,
+.auth-card,
+.vault-hero,
+.candidate-flow,
+.eligia-simple-landing,
+.profile-hero,
+.subscription-hero {
+  animation: kasusReveal var(--dur-slow) var(--ease-out) both;
+}
+
+.vault-grid .module-card-pro,
+.eligia-quick-grid .eligia-quick-card,
+.subscription-grid .subscription-card {
+  animation: kasusReveal var(--dur-slow) var(--ease-out) both;
+}
+
+.vault-grid .module-card-pro:nth-child(2),
+.eligia-quick-grid .eligia-quick-card:nth-child(2),
+.subscription-grid .subscription-card:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+/* --- Squelettes de chargement ------------------------------------------ */
+
+@keyframes skeletonPulse {
+  0%, 100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.skeleton {
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+  background: linear-gradient(90deg, rgba(16, 24, 36, 0.07), rgba(16, 24, 36, 0.12), rgba(16, 24, 36, 0.07));
+  background-size: 200% 100%;
+  border-radius: 999px;
+  display: block;
+  height: 14px;
+  width: 100%;
+}
+
+.skeleton-badge {
+  height: 28px;
+  width: 110px;
+}
+
+.skeleton-title {
+  border-radius: 12px;
+  height: 30px;
+  width: 64%;
+}
+
+.skeleton-title-xl {
+  height: 48px;
+  width: 52%;
+}
+
+.skeleton-line {
+  width: 92%;
+}
+
+.skeleton-line-short {
+  width: 56%;
+}
+
+.skeleton-card {
+  align-content: start;
+  gap: 16px;
+  min-height: 220px;
+}
+
+/* --- Badges et statuts -------------------------------------------------- */
+
+.badge-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.badge-device {
+  background:
+    linear-gradient(180deg, rgba(220, 236, 255, 0.9), rgba(255, 255, 255, 0.5));
+  border-color: rgba(39, 90, 143, 0.2);
+  color: var(--blue);
+}
+
+/* --- Micro-interactions -------------------------------------------------- */
+
+.btn,
+.icon-btn {
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+  will-change: transform;
+}
+
+.btn:active,
+.icon-btn:active,
+.choice-chips button:active,
+.candidate-tabs button:active,
+.eligia-quick-card:active,
+.module-card-pro:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 80ms;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+:focus-visible {
+  border-radius: 6px;
+  outline: 2px solid rgba(39, 90, 143, 0.65);
+  outline-offset: 3px;
+}
+
+.input,
+.question-input,
+.textarea {
+  transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease, background var(--dur-fast) ease;
+}
+
+.input:focus,
+.question-input:focus,
+.textarea:focus {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(39, 90, 143, 0.4);
+  box-shadow: 0 0 0 4px rgba(39, 90, 143, 0.1);
+  outline: none;
+}
+
+.input:disabled {
+  background: rgba(16, 24, 36, 0.04);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+@keyframes menuPop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.menu {
+  animation: menuPop var(--dur-fast) var(--ease-out) both;
+  transform-origin: top right;
+}
+
+.menu a,
+.menu button {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  transition: background var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.menu a:hover,
+.menu button:hover {
+  transform: translateX(2px);
+}
+
+.upload-zone {
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.upload-zone:hover {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(39, 90, 143, 0.45);
+  transform: translateY(-2px);
+}
+
+.progress span {
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+/* --- États vides, erreurs, succès ---------------------------------------- */
+
+.empty-state {
+  justify-items: center;
+  min-height: 260px;
+  place-content: center;
+  text-align: center;
+}
+
+.empty-state p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 46ch;
+}
+
+.empty-state .btn {
+  margin-top: 8px;
+}
+
+.empty-state-icon {
+  align-items: center;
+  background: rgba(17, 24, 39, 0.06);
+  border-radius: 22px;
+  color: var(--graphite);
+  display: inline-flex;
+  height: 60px;
+  justify-content: center;
+  margin-bottom: 4px;
+  width: 60px;
+}
+
+.notice {
+  background: rgba(255, 255, 255, 0.6);
+  border-left: 3px solid rgba(39, 90, 143, 0.5);
+  border-radius: 0 14px 14px 0;
+  padding: 12px 14px;
+}
+
+.success-text {
+  align-items: center;
+  display: inline-flex;
+  gap: 7px;
+}
+
+.error-text {
+  display: block;
+}
+
+.microcopy.error-text {
+  color: var(--red);
+  font-weight: 680;
+}
+
+/* --- Détails de finition -------------------------------------------------- */
+
+.topbar .icon-btn {
+  backdrop-filter: blur(18px) saturate(1.18);
+}
+
+.dossier-card .panel-heading h2 {
+  margin-top: 10px;
+}
+
+.candidate-link-box code {
+  user-select: all;
+}
+
+.vault-subtitle {
+  color: var(--muted);
+  font-size: clamp(1rem, 1.8vw, 1.2rem);
+  letter-spacing: 0.01em;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 52ch;
+}
+
+::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(16, 24, 36, 0.18);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(16, 24, 36, 0.3);
+}
+
+/* =========================================================================
+   KASUS — Design v2 « bijou »
+   Re-skin complet : matériaux blancs hairline, typographie resserrée,
+   boutons pill, profondeur douce, transitions de page.
+   Cette couche clôt la cascade : elle prime sur tout ce qui précède.
+   ========================================================================= */
+
+/* --- Transition de page --------------------------------------------------- */
+
+@keyframes pageEnter {
+  from {
+    filter: blur(5px);
+    opacity: 0;
+    transform: translateY(16px) scale(0.99);
+  }
+  55% {
+    filter: blur(0);
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.page-transition {
+  animation: pageEnter 560ms var(--ease-out) both;
+}
+
+/* Cascade d'arrivée : la barre puis le contenu, à chaque navigation. */
+.page-transition .shell > * {
+  animation: kasusReveal 620ms var(--ease-out) backwards;
+}
+
+.page-transition .shell > *:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.page-transition .shell > *:nth-child(3) {
+  animation-delay: 130ms;
+}
+
+.page-transition .shell > *:nth-child(4) {
+  animation-delay: 190ms;
+}
+
+/* --- Matériaux ------------------------------------------------------------ */
+
+.glass {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+}
+
+.module-card-pro,
+.eligia-quick-card {
+  background: #ffffff;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+}
+
+.module-card-pro::after,
+.module-card-active::after,
+.candidate-analysis-loader::before {
+  content: none;
+}
+
+.module-card-pro:hover,
+.eligia-quick-card:hover,
+.subscription-card:hover,
+.simple-dossier-row:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03), 0 24px 56px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.vault-modal-green,
+.vault-modal-graphite,
+.subscription-card-active,
+.agency-upload-zone,
+.candidate-analysis-loader {
+  box-shadow: var(--shadow);
+}
+
+.subscription-card-active {
+  border: 1px solid rgba(13, 128, 80, 0.35);
+}
+
+/* Tuiles internes : inset gris doux, façon réglages macOS. */
+.vault-hero-metrics div,
+.subscription-metrics article,
+.profile-hero-stats article,
+.profile-mini-metrics span,
+.dossier-metrics div,
+.person-metrics div,
+.profile-tile-grid div,
+.analysis-hud-grid article,
+.analysis-service-grid article,
+.eligia-rail-card,
+.vault-points div,
+.team-row,
+.person-mini,
+.detected-person-card,
+.required-docs,
+.candidate-link-box,
+.message-preview,
+.doc-check,
+.auth-visual-panel {
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: none;
+}
+
+.doc-check-ok {
+  background: rgba(13, 128, 80, 0.06);
+  border-color: rgba(13, 128, 80, 0.16);
+}
+
+.doc-check-missing {
+  background: rgba(194, 68, 79, 0.05);
+  border-color: rgba(194, 68, 79, 0.16);
+}
+
+/* Blocs d'accent sombres : noir profond, plat, sans dégradé. */
+.candidate-person-hero,
+.solvency-score,
+.analysis-score,
+.analysis-timer,
+.module-badge,
+.auth-visual-panel-primary,
+.person-tile-top > strong {
+  background: #1d1d1f;
+  border: 0;
+  box-shadow: none;
+}
+
+/* --- Typographie ----------------------------------------------------------- */
+
+.brand-wordmark,
+.auth-wordmark,
+.vault-title,
+.eligia-page-title {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.title-xl,
+.title-lg,
+.title-md,
+.modules-heading h1,
+.profile-heading h1,
+.profile-hero h1,
+.eligia-landing h1,
+.eligia-hero h1,
+.dossiers-heading h1,
+.dossier-detail-heading h1,
+.question-card h1,
+.builder-heading h1,
+.candidate-flow-top h1,
+.candidate-question h2,
+.candidate-documents h2,
+.subscription-hero h1 {
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+
+.muted,
+.subtitle {
+  color: var(--muted);
+}
+
+strong {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Boutons ---------------------------------------------------------------- */
+
+.btn {
+  backdrop-filter: none;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  min-height: 46px;
+  padding: 0 20px;
+}
+
+.btn:hover {
+  background: #fafafa;
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+  transform: translateY(-1px);
+}
+
+.btn-primary,
+.home-hero .btn-primary {
+  background: #1d1d1f;
+  border-color: #1d1d1f;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.14);
+  color: #ffffff;
+}
+
+.btn-primary:hover,
+.home-hero .btn-primary:hover {
+  background: #000000;
+  border-color: #000000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14), 0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+.icon-btn {
+  backdrop-filter: none;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.icon-btn:hover {
+  background: #fafafa;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.btn-compact {
+  min-height: 40px;
+  padding: 0 16px;
+}
+
+/* --- Badges ------------------------------------------------------------------ */
+
+.badge {
+  backdrop-filter: none;
+  background: rgba(0, 0, 0, 0.05);
+  border: 0;
+  box-shadow: none;
+  color: #515154;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  padding: 7px 12px;
+}
+
+.badge-green {
+  background: rgba(13, 128, 80, 0.1);
+  color: #0a6b43;
+}
+
+.badge-red {
+  background: rgba(194, 68, 79, 0.1);
+  color: #a8323d;
+}
+
+.badge-device {
+  background: rgba(0, 102, 204, 0.09);
+  color: var(--blue);
+}
+
+.simple-dossier-meta em,
+.document-pills span,
+.module-lock-active {
+  background: rgba(13, 128, 80, 0.09);
+  color: #0a6b43;
+}
+
+.report-list span {
+  background: rgba(194, 68, 79, 0.07);
+  color: #a8323d;
+}
+
+.report-list-green span {
+  background: rgba(13, 128, 80, 0.08);
+  color: #0a6b43;
+}
+
+/* --- Champs ------------------------------------------------------------------- */
+
+.input,
+.textarea {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+}
+
+.question-input {
+  backdrop-filter: none;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.input:focus,
+.question-input:focus,
+.textarea:focus {
+  background: #ffffff;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.14);
+}
+
+.auth-card .input {
+  background: #ffffff;
+}
+
+/* --- Chips et toggles ------------------------------------------------------------ */
+
+.choice-chips button,
+.candidate-tabs button {
+  backdrop-filter: none;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  font-weight: 600;
+}
+
+.choice-chips button:hover,
+.candidate-tabs button:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+}
+
+.choice-chips button.selected,
+.candidate-tabs button.selected {
+  background: #1d1d1f;
+  border-color: #1d1d1f;
+  color: #ffffff;
+}
+
+.role-toggle {
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.role-toggle button {
+  font-weight: 600;
+}
+
+.role-toggle button.selected {
+  background: #1d1d1f;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+/* --- Menus flottants ---------------------------------------------------------------- */
+
+.menu {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 24px 56px rgba(0, 0, 0, 0.14);
+}
+
+.menu a:hover,
+.menu button:hover {
+  background: rgba(0, 0, 0, 0.045);
+}
+
+/* --- Zones d'upload et progression ------------------------------------------------------ */
+
+.upload-zone {
+  background: #fafafa;
+  border: 1.5px dashed rgba(0, 0, 0, 0.16);
+}
+
+.upload-zone:hover {
+  background: #ffffff;
+  border-color: #1d1d1f;
+}
+
+.agency-upload-zone {
+  background: #fafafa;
+  border-style: dashed;
+}
+
+.progress {
+  background: rgba(0, 0, 0, 0.06);
+  height: 6px;
+}
+
+.progress span {
+  background: #1d1d1f;
+}
+
+.analysis-loader-ring {
+  background:
+    conic-gradient(from 180deg, #1d1d1f var(--analysis-progress), rgba(0, 0, 0, 0.06) 0),
+    #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.analysis-loader-icon {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.analysis-loader-ring::after {
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* --- Détails ------------------------------------------------------------------------------ */
+
+.page-kicker {
+  color: #86868b;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+}
+
+.page-kicker::before {
+  content: none;
+}
+
+.notice {
+  background: #f5f5f7;
+  border-left: 2px solid rgba(0, 0, 0, 0.35);
+  color: #515154;
+}
+
+.empty-state-icon {
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.required-docs span {
+  background: rgba(0, 0, 0, 0.05);
+  color: #515154;
+}
+
+.module-icon,
+.eligia-feature-icon,
+.module-float-icon {
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: none;
+}
+
+.module-lock {
+  background: rgba(0, 0, 0, 0.045);
+  border: 0;
+}
+
+.profile-avatar {
+  background: #1d1d1f;
+}
+
+.logo-mark {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.eligia-menu-lines {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow);
+}
+
+.eligia-menu-line:hover {
+  background: #1d1d1f;
+  border-color: #1d1d1f;
+}
+
+.simple-dossier-row,
+.simple-dossier-main:hover {
+  background: #ffffff;
+}
+
+.choice-row:hover {
+  background: #f5f5f7;
+}
+
+.vault-modal-scrim,
+.modal-scrim {
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.vault-close {
+  background: #f5f5f7;
+}
+
+.vault-close:hover {
+  background: #ebebed;
+}
+
+.home-aura {
+  display: none;
+}
+
+.home-logo,
+.eligia-logo-main {
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.08));
+}
+
+.footer-links a {
+  transition: color var(--dur-fast) ease;
+}
+
+.footer-links a:hover {
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 2px solid rgba(0, 102, 204, 0.7);
+}
+
+.candidate-flow-top .badge {
+  align-self: flex-start;
+}
+
+@media (max-width: 760px) {
+  .panel-heading .badge,
+  .candidate-flow-top .badge {
+    align-self: flex-start;
+    width: fit-content;
+  }
+}
+
+/* --- Écran modules : tuiles épurées + fiche module ----------------------- */
+
+.module-tile-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: clamp(12px, 2vw, 24px);
+  width: 100%;
+}
+
+.module-tile {
+  align-items: start;
+  background: #ffffff;
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  display: grid;
+  gap: 22px;
+  grid-template-rows: auto 1fr auto;
+  min-height: 280px;
+  padding: 28px;
+  text-align: left;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  animation: kasusReveal var(--dur-slow) var(--ease-out) both;
+}
+
+.module-tile:nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.module-tile:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03), 0 24px 56px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.module-tile:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.module-tile-icon {
+  align-items: center;
+  background: #f5f5f7;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 18px;
+  color: var(--text);
+  display: inline-flex;
+  height: 58px;
+  justify-content: center;
+  width: 58px;
+}
+
+.module-tile-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.module-tile-copy h2 {
+  font-size: clamp(1.9rem, 3vw, 2.7rem);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0;
+}
+
+.module-tile-copy p {
+  color: var(--muted);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.module-tile-foot {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.module-tile-state {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+  color: #515154;
+  display: inline-flex;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 6px;
+  padding: 7px 12px;
+}
+
+.module-tile-state-on {
+  background: rgba(13, 128, 80, 0.1);
+  color: #0a6b43;
+}
+
+.module-tile-go {
+  align-items: center;
+  color: var(--text);
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 600;
+  gap: 6px;
+  opacity: 0.55;
+  transition: opacity var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out);
+}
+
+.module-tile:hover .module-tile-go {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* Fiche module (sheet) */
+
+@keyframes sheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.module-sheet {
+  animation: sheetIn 360ms var(--ease-out) both;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 32px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 40px 90px rgba(0, 0, 0, 0.22);
+  display: grid;
+  gap: 22px;
+  max-height: min(720px, calc(100vh - 48px));
+  overflow: auto;
+  padding: clamp(26px, 4vw, 38px);
+  position: relative;
+  width: min(560px, 100%);
+}
+
+.module-sheet-icon {
+  border-radius: 20px;
+  height: 64px;
+  width: 64px;
+}
+
+.module-sheet-heading {
+  display: grid;
+  gap: 8px;
+}
+
+.module-sheet-heading h2 {
+  font-size: 2.1rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.module-sheet-heading p {
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.module-sheet-features {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.module-sheet-features li {
+  align-items: center;
+  color: var(--text);
+  display: flex;
+  font-size: 0.98rem;
+  gap: 12px;
+  line-height: 1.45;
+}
+
+.module-sheet-check {
+  align-items: center;
+  background: rgba(13, 128, 80, 0.1);
+  border-radius: 999px;
+  color: #0a6b43;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 26px;
+  justify-content: center;
+  width: 26px;
+}
+
+.module-sheet-footer {
+  align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding-top: 22px;
+}
+
+.module-sheet-price {
+  align-items: baseline;
+  display: inline-flex;
+  gap: 7px;
+}
+
+.module-sheet-price strong {
+  font-size: 2rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.module-sheet-price span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 760px) {
+  .module-tile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .module-tile {
+    min-height: 220px;
+  }
+
+  .module-sheet-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .module-sheet-footer .btn {
+    justify-content: center;
+  }
+}
+
+/* --- Fluidité : micro-animations transverses ------------------------------ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Apparition des étapes et panneaux internes (parcours candidat, fiches). */
+.candidate-question,
+.candidate-documents,
+.dossier-panel > * {
+  animation: candidateStepIn 320ms var(--ease-out) both;
+}
+
+/* Voile des modales : fondu systématique. */
+.vault-modal-scrim {
+  animation: modalFadeIn 220ms ease both;
+}
+
+/* Reflet discret sur les barres de progression actives. */
+.progress span {
+  overflow: hidden;
+  position: relative;
+}
+
+.progress span::after {
+  animation: progressSheen 1.8s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+@keyframes progressSheen {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Sélection des chips : léger rebond, façon ressort. */
+@keyframes chipPop {
+  0% {
+    transform: scale(0.94);
+  }
+  60% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.choice-chips button.selected,
+.candidate-tabs button.selected,
+.role-toggle button.selected {
+  animation: chipPop 280ms var(--ease-spring) both;
+}
+
+/* Menus flottants : entrées en cascade. */
+.menu > * {
+  animation: kasusReveal 260ms var(--ease-out) backwards;
+}
+
+.menu > *:nth-child(2) { animation-delay: 30ms; }
+.menu > *:nth-child(3) { animation-delay: 60ms; }
+.menu > *:nth-child(4) { animation-delay: 90ms; }
+.menu > *:nth-child(5) { animation-delay: 120ms; }
+
+/* Flèches des boutons : glissent vers l'avant au survol. */
+.btn svg {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover svg:last-of-type {
+  transform: translateX(2px);
+}
+
+.icon-btn svg {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.icon-btn:active svg {
+  transform: scale(0.9);
+}
+
+/* Tuiles modules : l'icône respire au survol. */
+.module-tile-icon {
+  transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.module-tile:hover .module-tile-icon {
+  transform: scale(1.06) translateY(-2px);
+}
+
+/* Lignes du menu ELIGIA : la flèche accompagne le survol. */
+.eligia-menu-line svg,
+.choice-row svg {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.eligia-menu-line:hover svg,
+.choice-row:hover svg {
+  transform: translateX(3px);
+}
+
+/* --- Écran d'analyse unifié ------------------------------------------------ */
+
+@property --analysis-progress {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+@keyframes ringBreath {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.025);
+  }
+}
+
+.analysis-stage {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+  padding: clamp(24px, 5vw, 48px);
+  text-align: center;
+  width: 100%;
+}
+
+.analysis-ring {
+  animation: ringBreath 3.2s ease-in-out infinite;
+  background: conic-gradient(#1d1d1f var(--analysis-progress), rgba(0, 0, 0, 0.06) 0);
+  border-radius: 999px;
+  padding: 3px;
+  transition: --analysis-progress 700ms var(--ease-out);
+}
+
+.analysis-ring-core {
+  align-items: center;
+  background: #ffffff;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
+  color: #1d1d1f;
+  display: inline-flex;
+  height: 96px;
+  justify-content: center;
+  width: 96px;
+}
+
+.analysis-stage h2 {
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  margin: 8px 0 0;
+}
+
+.analysis-stage-label {
+  animation: kasusReveal 360ms var(--ease-out) both;
+  color: var(--muted);
+  font-size: 1.02rem;
+  margin: 0;
+}
+
+.analysis-dots {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  animation: dotsGrow 1.6s steps(4, end) infinite;
+}
+
+.analysis-dots::after {
+  content: "…";
+}
+
+@keyframes dotsGrow {
+  from {
+    width: 0;
+  }
+  to {
+    width: 1.1em;
+  }
+}
+
+.analysis-stage-bar {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  height: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+  width: min(340px, 100%);
+}
+
+.analysis-stage-bar span {
+  background: #1d1d1f;
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  transition: width 700ms var(--ease-out);
+}
+
+.analysis-stage-bar span::after {
+  animation: progressSheen 1.8s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.analysis-stage small {
+  color: #86868b;
+  font-size: 0.88rem;
+}
+
+/* --- Fond unifié et wordmarks fondus --------------------------------------- */
+
+html {
+  background: #f5f5f7;
+}
+
+body {
+  background: linear-gradient(180deg, #fdfdfe 0%, #f5f5f7 360px);
+}
+
+/* Les héros KASUS / ELIGIA ne sont plus des cartes : ils se fondent au fond. */
+.auth-hero,
+.vault-hero-landing,
+.eligia-simple-landing {
+  backdrop-filter: none;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.auth-hero::before,
+.vault-hero::before,
+.vault-hero-landing::before,
+.subscription-hero::before {
+  content: none;
+}
+
+.vault-hero-landing {
+  min-height: 200px;
+  padding-bottom: 0;
+}
+
+.vault-title,
+.auth-wordmark,
+.eligia-page-title {
+  background: linear-gradient(180deg, #1d1d1f 24%, #86868b 125%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }

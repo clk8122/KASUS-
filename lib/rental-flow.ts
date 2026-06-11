@@ -25,15 +25,6 @@ export type RentalDossier = {
   applicants: RentalApplicant[];
 };
 
-export type DetectedPerson = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  confidence: number;
-  evidenceDocuments: string[];
-};
-
 export type RentalAnalysis = {
   solvencyScore: number;
   solvencyLabel: string;

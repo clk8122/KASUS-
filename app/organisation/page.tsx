@@ -3,7 +3,7 @@ import { OrganizationClient } from "@/components/account/OrganizationClient";
 
 export default function OrganisationPage() {
   return (
-    <AccessGate requiredModule="any" title="KASUS" subtitle="Identité de l'organisation.">
+    <AccessGate requiredModule="any" title="KASUS">
       <main className="page">
         <div className="shell">
           <OrganizationClient />

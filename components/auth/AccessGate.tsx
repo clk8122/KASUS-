@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useMemo, useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { ModuleVault } from "@/components/account/ModuleVault";
 import { useAccount } from "@/lib/use-account";
 
@@ -10,12 +10,11 @@ type AccessGateProps = {
   requiredModule?: "eligia" | "studio" | "any";
   allowWithoutSubscription?: boolean;
   title?: string;
-  subtitle?: string;
 };
 
 type Mode = "signin" | "signup";
 
-export function AccessGate({ children, requiredModule = "any", allowWithoutSubscription = false, title = "KASUS", subtitle }: AccessGateProps) {
+export function AccessGate({ children, requiredModule = "any", allowWithoutSubscription = false, title = "KASUS" }: AccessGateProps) {
   const {
     activeModules,
     authenticated,
@@ -65,7 +64,7 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
       setMessage(result.error);
       return;
     }
-    setMessage("Compte créé. Si aucune session n'est encore active, vérifie tes emails puis reconnecte-toi.");
+    setMessage("Compte créé.");
   }
 
   async function buy(moduleKey: "eligia" | "studio") {
@@ -83,7 +82,7 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
       <main className="access-shell">
         <div className="access-card glass access-card-loading">
           <Loader2 className="spin" size={28} />
-          <p>Chargement de KASUS...</p>
+          <p>Chargement...</p>
         </div>
       </main>
     );
@@ -94,26 +93,7 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
       <main className="auth-shell">
         <section className="auth-hero glass">
           <div className="auth-hero-copy">
-            <p className="eyebrow">Plateforme privée</p>
             <h1 className="auth-wordmark">{title}</h1>
-            {subtitle ? <p className="auth-subtitle">{subtitle}</p> : null}
-            <div className="auth-pills">
-              <span><Sparkles size={14} /> Authentification</span>
-              <span><Sparkles size={14} /> Abonnement par module</span>
-              <span><Sparkles size={14} /> Dossiers réels</span>
-            </div>
-          </div>
-          <div className="auth-visual">
-            <div className="auth-visual-panel auth-visual-panel-primary">
-              <span>Accès</span>
-              <strong>Verrouillé</strong>
-              <small>Aucun contenu factice, aucun espace ouvert sans session.</small>
-            </div>
-            <div className="auth-visual-panel">
-              <span>Modules</span>
-              <strong>99 EUR / mois</strong>
-              <small>Chaque module s’active individuellement.</small>
-            </div>
           </div>
         </section>
 
@@ -123,7 +103,6 @@ export function AccessGate({ children, requiredModule = "any", allowWithoutSubsc
               <button className={mode === "signin" ? "selected" : ""} onClick={() => setMode("signin")} type="button">Connexion</button>
               <button className={mode === "signup" ? "selected" : ""} onClick={() => setMode("signup")} type="button">Inscription</button>
             </div>
-            <p className="auth-card-note">{mode === "signin" ? "Revenez sur votre espace." : "Créez votre compte agence."}</p>
           </div>
           <form className="access-form" onSubmit={handleSubmit}>
             {mode === "signup" ? (

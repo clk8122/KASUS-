@@ -3,7 +3,7 @@ import { SystemStatusClient } from "@/components/system/SystemStatusClient";
 
 export default function SystemePage() {
   return (
-    <AccessGate requiredModule="any" title="KASUS" subtitle="Statut de configuration.">
+    <AccessGate requiredModule="any" title="KASUS">
       <main className="page">
         <div className="shell">
           <SystemStatusClient />

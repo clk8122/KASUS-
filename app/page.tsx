@@ -3,7 +3,7 @@ import { ModuleVault } from "@/components/account/ModuleVault";
 
 export default function HomePage() {
   return (
-    <AccessGate title="KASUS" subtitle="Connexion, abonnement et espace de travail sécurisé." requiredModule="any">
+    <AccessGate title="KASUS" requiredModule="any">
       <ModuleVault />
     </AccessGate>
   );

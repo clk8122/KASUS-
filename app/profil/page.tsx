@@ -3,7 +3,7 @@ import { ProfileClient } from "@/components/account/ProfileClient";
 
 export default function ProfilPage() {
   return (
-    <AccessGate requiredModule="any" title="KASUS" subtitle="Gérez votre profil réel.">
+    <AccessGate requiredModule="any" title="KASUS">
       <main className="page">
         <div className="shell">
           <ProfileClient />

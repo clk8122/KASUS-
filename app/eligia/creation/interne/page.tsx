@@ -3,7 +3,7 @@ import { InternalDossierWizard } from "@/components/eligia/InternalDossierWizard
 
 export default function InternalCreationPage() {
   return (
-    <AccessGate requiredModule="eligia" title="KASUS" subtitle="Créer un dossier réel depuis l'agence.">
+    <AccessGate requiredModule="eligia" title="KASUS">
       <main className="page">
         <div className="shell">
           <InternalDossierWizard />

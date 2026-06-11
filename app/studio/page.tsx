@@ -2,7 +2,7 @@ import { AccessGate } from "@/components/auth/AccessGate";
 
 export default function StudioPage() {
   return (
-    <AccessGate requiredModule="studio" title="KASUS" subtitle="Module STUDIO réservé aux abonnés.">
+    <AccessGate requiredModule="studio" title="KASUS">
       <main className="page">
         <div className="shell">
           <section className="empty-state glass">

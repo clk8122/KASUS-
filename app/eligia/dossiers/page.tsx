@@ -3,7 +3,7 @@ import { DossiersClient } from "@/components/eligia/DossiersClient";
 
 export default function DossiersPage() {
   return (
-    <AccessGate requiredModule="eligia" title="KASUS" subtitle="Liste réelle des dossiers enregistrés.">
+    <AccessGate requiredModule="eligia" title="KASUS">
       <main className="page">
         <div className="shell">
           <DossiersClient />

@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowRight, Check, Crown, LockKeyhole, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowRight, Crown, LockKeyhole } from "lucide-react";
+import { useState } from "react";
 import { useAccount } from "@/lib/use-account";
 
 type ModuleKey = "eligia" | "studio";
@@ -9,25 +9,16 @@ type ModuleKey = "eligia" | "studio";
 type ModuleCard = {
   key: ModuleKey;
   title: string;
-  tagline: string;
-  description: string;
-  points: string[];
 };
 
 const modules: ModuleCard[] = [
   {
     key: "eligia",
     title: "ELIGIA",
-    tagline: "Gestion locative",
-    description: "Dossiers, portail candidat et analyse documentaire avec une interface opérationnelle.",
-    points: ["Analyse des pièces", "Suivi des candidatures", "Relances et exports"]
   },
   {
     key: "studio",
     title: "STUDIO",
-    tagline: "Création immobilière",
-    description: "Annonces, visuels et contenus de présentation avec une direction artistique nette.",
-    points: ["Mises en page premium", "Contenus prêts à publier", "Création guidée"]
   }
 ];
 
@@ -35,8 +26,6 @@ export function SubscriptionClient() {
   const { activeModules, account, hasSubscription, signOut, startCheckout } = useAccount();
   const [message, setMessage] = useState("");
   const [loadingModule, setLoadingModule] = useState<ModuleKey | "">("");
-  const activeCount = useMemo(() => activeModules.length, [activeModules]);
-
   async function buy(moduleKey: ModuleKey) {
     setLoadingModule(moduleKey);
     setMessage("");
@@ -51,11 +40,7 @@ export function SubscriptionClient() {
     <section className="subscription-shell">
       <div className="subscription-hero glass">
         <div>
-          <p className="eyebrow">Abonnement</p>
           <h1>Modules activables à la carte</h1>
-          <p className="modules-subtitle">
-            Chaque module coûte 99 EUR / mois. Sans abonnement, aucun espace produit n’est accessible.
-          </p>
         </div>
         <div className="subscription-metrics">
           <article>
@@ -64,7 +49,7 @@ export function SubscriptionClient() {
           </article>
           <article>
             <span>Modules actifs</span>
-            <strong>{activeCount}</strong>
+            <strong>{activeModules.length}</strong>
           </article>
           <article>
             <span>Statut</span>
@@ -79,18 +64,11 @@ export function SubscriptionClient() {
           return (
             <button className={`subscription-card glass ${active ? "subscription-card-active" : ""}`} key={module.key} onClick={() => (active ? undefined : void buy(module.key))} type="button">
               <div className="subscription-card-top">
-                <span className="subscription-chip">{module.tagline}</span>
                 {active ? <span className="badge badge-green">Actif</span> : <span className="badge">À activer</span>}
               </div>
               <div className="subscription-card-title">
                 <h2>{module.title}</h2>
                 <strong>99 EUR</strong>
-              </div>
-              <p>{module.description}</p>
-              <div className="subscription-points">
-                {module.points.map((point) => (
-                  <span key={point}><Check size={14} /> {point}</span>
-                ))}
               </div>
               <div className="subscription-card-bottom">
                 <span>
@@ -109,9 +87,7 @@ export function SubscriptionClient() {
 
       <section className="subscription-footer glass">
         <div>
-          <p className="eyebrow">Compte</p>
           <h2>{account.agencyName || "Votre agence"}</h2>
-          <p className="muted">Le site reste verrouillé tant qu’aucun module n’est actif.</p>
         </div>
         <div className="subscription-footer-actions">
           <button className="btn btn-compact" onClick={() => void signOut()} type="button">

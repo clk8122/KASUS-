@@ -3,7 +3,7 @@ import { SubscriptionClient } from "@/components/account/SubscriptionClient";
 
 export default function AbonnementPage() {
   return (
-    <AccessGate allowWithoutSubscription requiredModule="any" title="KASUS" subtitle="Choisissez un module pour accéder au site.">
+    <AccessGate allowWithoutSubscription requiredModule="any" title="KASUS">
       <main className="page">
         <div className="shell">
           <SubscriptionClient />

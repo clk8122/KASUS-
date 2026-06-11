@@ -202,6 +202,21 @@ button {
   padding: 28px;
 }
 
+.eyebrow,
+.modules-subtitle,
+.auth-subtitle,
+.auth-pills,
+.auth-visual,
+.auth-card-note,
+.vault-subtitle,
+.module-eyebrow,
+.eligia-hero-pills,
+.subscription-chip,
+.subscription-footer-note,
+.microcopy {
+  display: none !important;
+}
+
 .auth-hero,
 .auth-card,
 .vault-hero,

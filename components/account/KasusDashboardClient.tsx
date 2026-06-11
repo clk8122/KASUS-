@@ -10,9 +10,7 @@ export function KasusDashboardClient() {
   return (
     <section className="modules-page">
       <div className="modules-heading">
-        <p className="eyebrow">Espace de travail</p>
         <h1>{account.agencyName}</h1>
-        <p className="modules-subtitle">Choisissez votre module</p>
       </div>
       <div className="module-grid module-grid-pro">
         <Link className="module-card-pro module-card-active" href="/eligia">

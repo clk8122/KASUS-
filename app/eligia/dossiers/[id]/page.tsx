@@ -9,7 +9,7 @@ export default async function DossierDetailPage({ params }: DossierDetailPagePro
   const { id } = await params;
 
   return (
-    <AccessGate requiredModule="eligia" title="KASUS" subtitle="Détail d'un dossier réel.">
+    <AccessGate requiredModule="eligia" title="KASUS">
       <main className="page">
         <div className="shell">
           <DossierDetailClient id={id} />

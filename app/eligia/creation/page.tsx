@@ -4,7 +4,7 @@ import { AccessGate } from "@/components/auth/AccessGate";
 
 export default function CreationChoicePage() {
   return (
-    <AccessGate requiredModule="eligia" title="KASUS" subtitle="Créer un dossier réel ou générer un lien candidat.">
+    <AccessGate requiredModule="eligia" title="KASUS">
       <main className="page">
         <div className="shell">
           <section className="eligia-simple-page">

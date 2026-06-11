@@ -3,7 +3,7 @@ import { CandidateLinkGenerator } from "@/components/eligia/CandidateLinkGenerat
 
 export default function LinkCreationPage() {
   return (
-    <AccessGate requiredModule="eligia" title="KASUS" subtitle="Générer un vrai lien candidat.">
+    <AccessGate requiredModule="eligia" title="KASUS">
       <main className="page">
         <div className="shell">
           <CandidateLinkGenerator />

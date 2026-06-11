@@ -30,11 +30,7 @@ export function OrganizationClient() {
     <section className="profile-page">
       <section className="profile-hero glass">
         <div>
-          <p className="eyebrow">Organisation</p>
           <h1>{account.agencyName || "Organisation"}</h1>
-          <p className="modules-subtitle">
-            Identité de marque, coordonnées et logo photo pour les exports et les écrans métier.
-          </p>
         </div>
         <div className="profile-hero-stats">
           <article>
@@ -69,7 +65,6 @@ export function OrganizationClient() {
               <small>téléphone</small>
             </span>
           </div>
-          <p className="microcopy">Ces informations peuvent être reprises dans les modules et documents générés.</p>
         </aside>
 
         <div className="profile-stack">
@@ -77,9 +72,7 @@ export function OrganizationClient() {
             <div className="panel-heading">
               <div>
                 <h2>Identité de l'agence</h2>
-                <p>Le nom de l'agence modifié ici apparaît aussi sur les écrans principaux.</p>
               </div>
-              <span className="microcopy">Sauvegarde automatique</span>
             </div>
             <div className="split">
               <label className="field">
@@ -105,7 +98,6 @@ export function OrganizationClient() {
             <div className="panel-heading">
               <div>
                 <h2>Logo et signature</h2>
-                <p>Ajoutez une photo de logo et une signature agence pour les futurs exports.</p>
               </div>
             </div>
             <div className="profile-logo-grid">
@@ -125,7 +117,6 @@ export function OrganizationClient() {
               Signature agence
               <textarea className="input textarea" value={account.signature} onChange={(event) => updateAccount({ signature: event.target.value })} />
             </label>
-            {uploading ? <p className="microcopy">Envoi du logo en cours...</p> : null}
           </section>
         </div>
       </div>

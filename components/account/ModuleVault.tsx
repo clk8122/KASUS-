@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, FileCheck2, LockKeyhole, PenLine, Sparkles, X } from "lucide-react";
+import { ArrowRight, FileCheck2, LockKeyhole, PenLine, Sparkles, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useAccount } from "@/lib/use-account";
@@ -10,9 +10,6 @@ type ModuleKey = "eligia" | "studio";
 type ModuleInfo = {
   key: ModuleKey;
   title: string;
-  eyebrow: string;
-  description: string;
-  points: string[];
   price: string;
   billing: string;
   statusLabel: string;
@@ -24,13 +21,6 @@ const modules: ModuleInfo[] = [
   {
     key: "eligia",
     title: "ELIGIA",
-    eyebrow: "Gestion locative",
-    description: "Dossiers candidats, analyse documentaire, messages de relance et suivi d'équipe dans une seule interface.",
-    points: [
-      "Création de dossiers et portail candidat",
-      "Analyse de pièces et synthèse automatique",
-      "Suivi des dossiers en temps réel"
-    ],
     price: "99 EUR",
     billing: "/ mois",
     statusLabel: "Accès offert",
@@ -40,13 +30,6 @@ const modules: ModuleInfo[] = [
   {
     key: "studio",
     title: "STUDIO",
-    eyebrow: "Création immobilière",
-    description: "Concevez des supports élégants et des annonces prêtes à publier pour présenter vos biens avec une vraie direction artistique.",
-    points: [
-      "Pages de création et templates",
-      "Exports propres pour diffusion",
-      "Contenus optimisés pour vos annonces"
-    ],
     price: "99 EUR",
     billing: "/ mois",
     statusLabel: "Souscription requise",
@@ -65,8 +48,6 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
   const [selected, setSelected] = useState<ModuleKey | "">("");
   const [pending, setPending] = useState<ModuleKey | "">("");
   const currentModule = useMemo(() => modules.find((item) => item.key === selected) ?? null, [selected]);
-  const selectedIsActive = currentModule ? activeModules.includes(currentModule.key) : false;
-
   async function subscribe(moduleKey: ModuleKey) {
     setPending(moduleKey);
     const payload = await startCheckout(moduleKey);
@@ -90,9 +71,7 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
     <section className="vault-shell">
       <div className="vault-hero glass vault-hero-landing">
         <div className="vault-hero-copy vault-hero-copy-center">
-          <p className="eyebrow">KASUS</p>
           <h1 className="vault-title">KASUS</h1>
-          <p className="vault-subtitle">{account.agencyName || "Votre agence"} accède à un espace premium où chaque module s’active séparément.</p>
         </div>
       </div>
 
@@ -119,11 +98,7 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
                 <LockKeyhole size={16} />
                 <span>{active ? module.accentLabel : module.statusLabel}</span>
               </div>
-              <div>
-                <p className="module-eyebrow">{module.eyebrow}</p>
-                <h2>{module.title}</h2>
-                <p>{module.description}</p>
-              </div>
+              <h2>{module.title}</h2>
               <span className="module-open">
                 {active ? "Ouvrir" : "Découvrir"} <ArrowRight size={17} />
               </span>
@@ -139,25 +114,13 @@ export function ModuleVault({ mode = "landing" }: ModuleVaultProps) {
               <X size={18} />
             </button>
             <div className="vault-modal-header">
-              <div>
-                <p className="eyebrow">{currentModule.eyebrow}</p>
-                <h2>{currentModule.title}</h2>
-              </div>
+              <h2>{currentModule.title}</h2>
               <div className="module-price module-price-modal">
                 <strong>{currentModule.price}</strong>
                 <span>{currentModule.billing}</span>
               </div>
             </div>
-            <p className="vault-modal-copy">{currentModule.description}</p>
-            <div className="vault-points">
-              {currentModule.points.map((point) => (
-                <div key={point}>
-                  <Check size={16} />
-                  <span>{point}</span>
-                </div>
-              ))}
-            </div>
-            {selectedIsActive ? (
+            {currentModule && activeModules.includes(currentModule.key) ? (
               <div className="vault-modal-actions">
                 <button className="btn btn-primary" onClick={() => openModule(currentModule.key)} type="button">
                   Ouvrir le module

@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function EligiaMenuPage() {
   return (
-    <AccessGate requiredModule="eligia" title="KASUS" subtitle="Module locatif réservé aux comptes abonnés.">
+    <AccessGate requiredModule="eligia" title="KASUS">
       <main className="page eligia-menu-page">
         <div className="shell">
           <section className="eligia-hero eligia-landing glass">

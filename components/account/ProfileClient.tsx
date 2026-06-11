@@ -28,11 +28,7 @@ export function ProfileClient() {
     <section className="profile-page">
       <section className="profile-hero glass">
         <div>
-          <p className="eyebrow">Compte</p>
           <h1>Mon profil</h1>
-          <p className="modules-subtitle">
-            Une vue claire pour votre identité, vos accès et vos paramètres de facturation.
-          </p>
         </div>
         <div className="profile-hero-stats">
           <article>
@@ -69,7 +65,6 @@ export function ProfileClient() {
               <small>siège additionnel</small>
             </span>
           </div>
-          <p className="microcopy">Les informations ci-dessous sont synchronisées avec votre compte.</p>
         </aside>
 
         <div className="profile-stack">
@@ -104,12 +99,10 @@ export function ProfileClient() {
           <section className="profile-secondary-grid">
             <div className="glass panel profile-panel">
               <h2>Abonnement</h2>
-              <p className="muted">Gérez vos modules et votre accès payant.</p>
               <Link className="btn btn-compact" href="/abonnement">Ouvrir la facturation</Link>
             </div>
             <div className="glass panel profile-panel">
               <h2>Organisation</h2>
-              <p className="muted">Nom, adresse, mentions et signature de l’agence.</p>
               <Link className="btn btn-compact" href="/organisation">Configurer</Link>
             </div>
           </section>

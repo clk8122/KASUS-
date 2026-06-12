@@ -955,6 +955,10 @@ async function readDocumentInventory(files: File[], fileContents: ResponseConten
   return JSON.parse(extractOutputText(payload)) as InventoryPayload;
 }
 
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export async function POST(request: NextRequest) {
   // Le portail candidat est anonyme : pas d'authentification possible ici.
   // On bloque au minimum les appels cross-site pour protéger le quota IA.
@@ -994,139 +998,160 @@ export async function POST(request: NextRequest) {
       ? inventory.documents.map((document) => `${document.fileName}: ${document.documentType} (${Math.round(document.confidence * 100)}%) - ${document.evidenceReason}`).join("\n")
       : "Inventaire indisponible.";
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
-        input: [
-          {
-            role: "system",
-            content:
-              "Tu analyses des dossiers de candidature locative francais pour une agence. Tu dois produire une lecture operationnelle, humaine et precise. Tu ne prends jamais la decision finale. Ne signale pas l'absence de garant comme un probleme si les revenus locataires suffisent ou si aucun garant n'a ete fourni."
+    let lastError: unknown = null;
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      try {
+        const response = await fetch("https://api.openai.com/v1/responses", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+            "Content-Type": "application/json"
           },
-          {
-            role: "user",
-            content: [
+          body: JSON.stringify({
+            model: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
+            input: [
               {
-                type: "input_text",
-                text:
-                  `Adresse du bien: ${address}\nLoyer charges comprises: ${rent} EUR\nFichiers recus:\n${fileList}\n\n` +
-                  `Inventaire prealable des pieces, a respecter strictement:\n${inventoryText}\n\n` +
-                  `Grille documentaire stricte:\n${documentSignatureGuide}\n\n` +
-                  "Analyse les pieces jointes. Identifie locataires et garants quand c'est visible. Extrais: employeur, poste, type de contrat, date de debut, salaire net mensuel, revenu fiscal annuel, situation logement actuelle. Fais un resume humain en phrases naturelles, comme un conseiller qui explique le dossier a une gestionnaire, sans style robotique et sans formules du type 'rapport revenu / loyer'. IMPORTANT: respecte l'inventaire controle. Interdictions strictes: une attestation de salaire annuelle N'EST PAS un avis d'imposition; un cumul imposable ou net imposable sur fiche de paie N'EST PAS un avis d'imposition; un bulletin de salaire ou une fiche de paie N'EST PAS une quittance de loyer; un bulletin de salaire N'EST PAS un contrat de travail; un avis d'imposition N'EST PAS un justificatif de domicile. Le champ taxNoticeIncome doit rester a 0 si aucun vrai avis d'imposition DGFIP/impots.gouv n'est present avec marqueurs forts. Ne copie jamais un cumul de bulletin de paie, un net fiscal de fiche de paie ou une attestation de salaire annuel dans taxNoticeIncome. Pour un salarie CDI/CDD il faut obligatoirement: piece d'identite, contrat de travail ou attestation employeur, 3 derniers bulletins de salaire, dernier avis d'imposition, justificatif domicile/quittances. Mets present uniquement si le documentType correspond exactement a la piece demandee et si la confiance de l'inventaire est suffisante. Sinon missing avec evidenceReason expliquant pourquoi."
+                role: "system",
+                content:
+                  "Tu analyses des dossiers de candidature locative francais pour une agence. Tu dois produire une lecture operationnelle, humaine et precise. Tu ne prends jamais la decision finale. Ne signale pas l'absence de garant comme un probleme si les revenus locataires suffisent ou si aucun garant n'a ete fourni."
               },
-              ...fileContents
-            ]
-          }
-        ],
-        text: {
-          format: {
-            type: "json_schema",
-            name: "eligia_document_analysis",
-            schema: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                people: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    additionalProperties: false,
-                    properties: {
-                      id: { type: "string" },
-                      name: { type: "string" },
-                      role: { type: "string", enum: ["Locataire", "Garant"] },
-                      documents: { type: "array", items: { type: "string" } },
-                      situation: { type: "string" },
-                      employer: { type: "string" },
-                      housingStatus: { type: "string" },
-                      monthlyIncome: { type: "number" },
-                      taxNoticeIncome: { type: "number" },
-                      incomeRatio: { type: "number" },
-                      warnings: { type: "array", items: { type: "string" } }
-                    },
-                    required: ["id", "name", "role", "documents", "situation", "employer", "housingStatus", "monthlyIncome", "taxNoticeIncome", "incomeRatio", "warnings"]
-                  }
-                },
-                report: {
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "input_text",
+                    text:
+                      `Adresse du bien: ${address}\nLoyer charges comprises: ${rent} EUR\nFichiers recus:\n${fileList}\n\n` +
+                      `Inventaire prealable des pieces, a respecter strictement:\n${inventoryText}\n\n` +
+                      `Grille documentaire stricte:\n${documentSignatureGuide}\n\n` +
+                      "Analyse les pieces jointes. Identifie locataires et garants quand c'est visible. Extrais: employeur, poste, type de contrat, date de debut, salaire net mensuel, revenu fiscal annuel, situation logement actuelle. Fais un resume humain en phrases naturelles, comme un conseiller qui explique le dossier a une gestionnaire, sans style robotique et sans formules du type 'rapport revenu / loyer'. IMPORTANT: respecte l'inventaire controle. Interdictions strictes: une attestation de salaire annuelle N'EST PAS un avis d'imposition; un cumul imposable ou net imposable sur fiche de paie N'EST PAS un avis d'imposition; un bulletin de salaire ou une fiche de paie N'EST PAS une quittance de loyer; un bulletin de salaire N'EST PAS un contrat de travail; un avis d'imposition N'EST PAS un justificatif de domicile. Le champ taxNoticeIncome doit rester a 0 si aucun vrai avis d'imposition DGFIP/impots.gouv n'est present avec marqueurs forts. Ne copie jamais un cumul de bulletin de paie, un net fiscal de fiche de paie ou une attestation de salaire annuel dans taxNoticeIncome. Pour un salarie CDI/CDD il faut obligatoirement: piece d'identite, contrat de travail ou attestation employeur, 3 derniers bulletins de salaire, dernier avis d'imposition, justificatif domicile/quittances. Mets present uniquement si le documentType correspond exactement a la piece demandee et si la confiance de l'inventaire est suffisante. Sinon missing avec evidenceReason expliquant pourquoi."
+                  },
+                  ...fileContents
+                ]
+              }
+            ],
+            text: {
+              format: {
+                type: "json_schema",
+                name: "eligia_document_analysis",
+                schema: {
                   type: "object",
                   additionalProperties: false,
                   properties: {
-                    score: { type: "number" },
-                    label: { type: "string" },
-                    completeness: { type: "number" },
-                    humanSummary: { type: "string" },
-                    ownerMessage: { type: "string" },
-                    executiveSummary: { type: "string" },
-                    solvencySummary: { type: "string" },
-                    documentSummary: { type: "string" },
-                    documentChecklist: {
+                    people: {
                       type: "array",
                       items: {
                         type: "object",
                         additionalProperties: false,
                         properties: {
                           id: { type: "string" },
-                          label: { type: "string" },
-                          category: { type: "string", enum: ["Identite", "Revenus", "Domicile", "Professionnel", "Fiscalite", "Autre"] },
-                          personName: { type: "string" },
-                          status: { type: "string", enum: ["present", "missing"] },
-                          documentType: {
-                            type: "string",
-                            enum: ["piece_identite", "titre_sejour", "passeport", "contrat_travail", "attestation_employeur", "bulletin_salaire", "attestation_salaire_annuelle", "contrat_apprentissage", "carte_etudiant", "avis_bourse", "avis_imposition", "quittance_loyer", "justificatif_domicile", "taxe_fonciere", "titre_propriete", "attestation_hebergement", "attestation_assurance_habitation", "facture_energie", "kbis", "bilan_comptable", "attestation_retraite", "attestation_france_travail", "attestation_rsa", "releve_prestations", "autre", "illisible"]
-                          },
-                          evidenceReason: { type: "string" },
-                          evidence: { type: "array", items: { type: "string" } }
+                          name: { type: "string" },
+                          role: { type: "string", enum: ["Locataire", "Garant"] },
+                          documents: { type: "array", items: { type: "string" } },
+                          situation: { type: "string" },
+                          employer: { type: "string" },
+                          housingStatus: { type: "string" },
+                          monthlyIncome: { type: "number" },
+                          taxNoticeIncome: { type: "number" },
+                          incomeRatio: { type: "number" },
+                          warnings: { type: "array", items: { type: "string" } }
                         },
-                        required: ["id", "label", "category", "personName", "status", "documentType", "evidenceReason", "evidence"]
+                        required: ["id", "name", "role", "documents", "situation", "employer", "housingStatus", "monthlyIncome", "taxNoticeIncome", "incomeRatio", "warnings"]
                       }
                     },
-                    missingDocuments: { type: "array", items: { type: "string" } },
-                    inconsistencies: { type: "array", items: { type: "string" } },
-                    strengths: { type: "array", items: { type: "string" } },
-                    riskPoints: { type: "array", items: { type: "string" } },
-                    recommendation: { type: "string" },
-                    source: { type: "string", enum: ["openai", "local"] }
+                    report: {
+                      type: "object",
+                      additionalProperties: false,
+                      properties: {
+                        score: { type: "number" },
+                        label: { type: "string" },
+                        completeness: { type: "number" },
+                        humanSummary: { type: "string" },
+                        ownerMessage: { type: "string" },
+                        executiveSummary: { type: "string" },
+                        solvencySummary: { type: "string" },
+                        documentSummary: { type: "string" },
+                        documentChecklist: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            additionalProperties: false,
+                            properties: {
+                              id: { type: "string" },
+                              label: { type: "string" },
+                              category: { type: "string", enum: ["Identite", "Revenus", "Domicile", "Professionnel", "Fiscalite", "Autre"] },
+                              personName: { type: "string" },
+                              status: { type: "string", enum: ["present", "missing"] },
+                              documentType: {
+                                type: "string",
+                                enum: ["piece_identite", "titre_sejour", "passeport", "contrat_travail", "attestation_employeur", "bulletin_salaire", "attestation_salaire_annuelle", "contrat_apprentissage", "carte_etudiant", "avis_bourse", "avis_imposition", "quittance_loyer", "justificatif_domicile", "taxe_fonciere", "titre_propriete", "attestation_hebergement", "attestation_assurance_habitation", "facture_energie", "kbis", "bilan_comptable", "attestation_retraite", "attestation_france_travail", "attestation_rsa", "releve_prestations", "autre", "illisible"]
+                              },
+                              evidenceReason: { type: "string" },
+                              evidence: { type: "array", items: { type: "string" } }
+                            },
+                            required: ["id", "label", "category", "personName", "status", "documentType", "evidenceReason", "evidence"]
+                          }
+                        },
+                        missingDocuments: { type: "array", items: { type: "string" } },
+                        inconsistencies: { type: "array", items: { type: "string" } },
+                        strengths: { type: "array", items: { type: "string" } },
+                        riskPoints: { type: "array", items: { type: "string" } },
+                        recommendation: { type: "string" },
+                        source: { type: "string", enum: ["openai", "local"] }
+                      },
+                      required: ["score", "label", "completeness", "humanSummary", "ownerMessage", "executiveSummary", "solvencySummary", "documentSummary", "documentChecklist", "missingDocuments", "inconsistencies", "strengths", "riskPoints", "recommendation", "source"]
+                    }
                   },
-                  required: ["score", "label", "completeness", "humanSummary", "ownerMessage", "executiveSummary", "solvencySummary", "documentSummary", "documentChecklist", "missingDocuments", "inconsistencies", "strengths", "riskPoints", "recommendation", "source"]
+                  required: ["people", "report"]
                 }
-              },
-              required: ["people", "report"]
+              }
             }
+          })
+        });
+
+        if (!response.ok) {
+          lastError = new Error(`OpenAI HTTP ${response.status}`);
+          console.warn(`[eligia] analyze-documents: appel IA echoue a l'essai ${attempt} (HTTP ${response.status}).`);
+          if (attempt < 2) {
+            await sleep(800);
+            continue;
           }
+          return NextResponse.json(fallback);
         }
-      })
-    });
 
-    if (!response.ok) {
-      return NextResponse.json(fallback);
+        const payload = await response.json();
+        const parsed = JSON.parse(extractOutputText(payload)) as DocumentAnalysisPayload;
+        const analyzedPeople = parsed.people.length ? parsed.people : fallbackPeople(files);
+        const inventoryChecklist = inventory.documents.length ? inventoryToChecklist(inventory.documents, analyzedPeople) : [];
+        const checkedList = hardValidateChecklist(inventoryChecklist.length ? inventoryChecklist : parsed.report.documentChecklist ?? [], analyzedPeople);
+        const checkedReport = sanitizeReportTaxIncomeStrict(
+          alignReportWithChecklist(
+            syncReportWithChecklist({ ...parsed.report, source: "openai", documentInventory: inventory.documents }, checkedList),
+            checkedList
+          ),
+          inventory.documents
+        );
+        const sanitizedPeople = sanitizePeopleTaxIncomeStrict(analyzedPeople, inventory.documents);
+        const finalPayload = removeFalseChronologyWarnings({
+          people: sanitizedPeople.map((person, index) => ({
+            ...person,
+            id: person.id || `person-openai-${index}`
+          })),
+          report: checkedReport
+        }, inventory.documents);
+        return NextResponse.json(finalPayload);
+      } catch (error) {
+        lastError = error;
+        console.warn(`[eligia] analyze-documents: tentative IA ${attempt} en echec, repli apres retry.`, error);
+        if (attempt < 2) {
+          await sleep(800);
+          continue;
+        }
+        return NextResponse.json(fallback);
+      }
     }
-
-    const payload = await response.json();
-    const parsed = JSON.parse(extractOutputText(payload)) as DocumentAnalysisPayload;
-    const analyzedPeople = parsed.people.length ? parsed.people : fallbackPeople(files);
-    const inventoryChecklist = inventory.documents.length ? inventoryToChecklist(inventory.documents, analyzedPeople) : [];
-    const checkedList = hardValidateChecklist(inventoryChecklist.length ? inventoryChecklist : parsed.report.documentChecklist ?? [], analyzedPeople);
-    const checkedReport = sanitizeReportTaxIncomeStrict(
-      alignReportWithChecklist(
-        syncReportWithChecklist({ ...parsed.report, source: "openai", documentInventory: inventory.documents }, checkedList),
-        checkedList
-      ),
-      inventory.documents
-    );
-    const sanitizedPeople = sanitizePeopleTaxIncomeStrict(analyzedPeople, inventory.documents);
-    const finalPayload = removeFalseChronologyWarnings({
-      people: sanitizedPeople.map((person, index) => ({
-        ...person,
-        id: person.id || `person-openai-${index}`
-      })),
-      report: checkedReport
-    }, inventory.documents);
-    return NextResponse.json(finalPayload);
+    console.warn("[eligia] analyze-documents: echec IA apres retry.", lastError);
+    return NextResponse.json(fallback);
   } catch (error) {
     console.warn("[eligia] analyze-documents: analyse IA indisponible, repli sur l'analyse locale.", error);
     return NextResponse.json(fallback);

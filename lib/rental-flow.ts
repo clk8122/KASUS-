@@ -1,4 +1,5 @@
 import { ApplicantRole, HousingStatus, WorkStatus, getDocumentRules, housingStatusLabels, workStatusLabels } from "@/data/rental-documents";
+import type { EligiaAnalysisReport } from "@/lib/eligia-mvp";
 
 export type UploadedDocument = {
   id: string;
@@ -137,4 +138,42 @@ export function buildLocalAnalysis(dossier: RentalDossier): RentalAnalysis {
   ].join(" ");
 
   return { applicantSignals, globalRatio, maxEligibleRent, missingDocuments, solvencyLabel, solvencyScore, summary, warnings };
+}
+
+export function buildFallbackEligiaReport(dossier: RentalDossier, missingDocuments: string[] = []): EligiaAnalysisReport {
+  const local = buildLocalAnalysis(dossier);
+  const uploadedDocuments = dossier.applicants.reduce((sum, applicant) => sum + applicant.documents.length, 0);
+  const expectedDocuments = Math.max(1, dossier.applicants.length * 4);
+  const completeness = Math.min(100, Math.round((uploadedDocuments / expectedDocuments) * 100));
+  const combinedMissingDocuments = Array.from(new Set([...(local.missingDocuments ?? []), ...missingDocuments]));
+
+  return {
+    score: local.solvencyScore,
+    label: local.solvencyLabel,
+    completeness,
+    humanSummary: local.summary,
+    ownerMessage: [
+      "Bonjour,",
+      "",
+      `Le dossier pour ${dossier.address || "le logement"} a ete analyse localement.`,
+      combinedMissingDocuments.length
+        ? `Il manque encore : ${combinedMissingDocuments.join(", ")}.`
+        : "Les pieces principales attendues semblent presentes d'apres les informations renseignees.",
+      "",
+      "Bien cordialement"
+    ].join("\n"),
+    executiveSummary: local.summary,
+    solvencySummary: local.summary,
+    documentSummary: combinedMissingDocuments.length
+      ? `Pieces manquantes : ${combinedMissingDocuments.join(", ")}.`
+      : "Les pieces principales attendues semblent presentes d'apres les informations renseignees.",
+    missingDocuments: combinedMissingDocuments,
+    inconsistencies: local.warnings ?? [],
+    strengths: local.solvencyScore >= 58 ? ["Dossier exploitable pour une premiere lecture agence."] : [],
+    riskPoints: local.warnings ?? [],
+    recommendation: local.solvencyScore >= 58
+      ? "Transmettre a l'agence pour verification finale."
+      : `Dossier fragile. Loyer maximum estime : ${local.maxEligibleRent ?? 0} EUR.`,
+    source: "local"
+  };
 }

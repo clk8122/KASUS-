@@ -8,7 +8,7 @@ import { ApplicantRole, HousingStatus, WorkStatus, getDocumentRules, housingStat
 import { validateUploadFile } from "@/lib/document-processing";
 import { ACCOUNT_STORAGE_KEY, defaultAccountState } from "@/lib/account-store";
 import { EligiaAnalysisReport, EligiaMvpDossier, EligiaMvpPerson, readEligiaDossiers, saveEligiaDossier } from "@/lib/eligia-mvp";
-import { RentalApplicant, RentalDossier, applicantFullName, buildLocalAnalysis, createApplicant } from "@/lib/rental-flow";
+import { RentalApplicant, RentalDossier, applicantFullName, buildFallbackEligiaReport, buildLocalAnalysis, createApplicant } from "@/lib/rental-flow";
 
 type PortalStep = "intro" | "tenant-count" | "profile" | "guarantor-choice" | "guarantor-count" | "documents" | "missing" | "analysis" | "contact" | "result";
 
@@ -241,13 +241,15 @@ export function CandidatePortalFlow() {
       });
       setProgress(100);
       patchState({ step: "contact" });
-    } catch (thrown) {
-      setAnalysisError(
-        thrown instanceof Error && thrown.message !== "Analyse impossible"
-          ? thrown.message
-          : "L'analyse IA n'a pas pu aboutir. Le dossier n'a pas été enregistré comme analyse finale."
-      );
+    } catch {
+      const fallbackPeople = createPeople(state.applicants);
+      setDetectedPeople(fallbackPeople.map((person, index) => ({
+        ...person,
+        id: person.id || `fallback-${index}`
+      })));
+      setAnalysisReport(buildFallbackEligiaReport(analysis, currentMissing));
       setProgress(100);
+      patchState({ step: "contact" });
     } finally {
       timers.forEach(window.clearTimeout);
     }

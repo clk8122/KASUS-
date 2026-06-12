@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { AnalysisLoader } from "@/components/eligia/AnalysisLoader";
 import { validateUploadFile } from "@/lib/document-processing";
 import { buildCandidateLink, createLocalDossierId, EligiaAnalysisReport, EligiaMvpPerson, saveEligiaDossier } from "@/lib/eligia-mvp";
+import { buildFallbackEligiaReport, applicantFullName, createApplicant } from "@/lib/rental-flow";
 
 type Step = "address" | "rent" | "files" | "confirm" | "done";
 
@@ -63,15 +64,40 @@ export function InternalDossierWizard() {
       });
       if (!response.ok) {
         const failure = (await response.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(failure?.error || "L'analyse n'a pas pu aboutir. Vérifiez les fichiers puis relancez.");
+        throw new Error(failure?.error || "L'analyse n'a pas pu aboutir. Veuillez verifier les fichiers puis relancer.");
       }
       const payload = (await response.json()) as { people: EligiaMvpPerson[]; report: EligiaAnalysisReport };
       setPendingPeople(payload.people);
       setPendingReport(payload.report);
       setAnalysisProgress(100);
       setStep("confirm");
-    } catch (thrown) {
-      setError(thrown instanceof Error ? thrown.message : "L'analyse n'a pas pu aboutir. Vérifiez les fichiers puis relancez.");
+    } catch {
+      const fallbackApplicant = {
+        ...createApplicant("tenant"),
+        documents: files.map((file) => ({ id: file.id, name: file.name, size: file.size }))
+      };
+      const fallbackPeople: EligiaMvpPerson[] = [
+        {
+          id: "fallback-tenant-1",
+          name: applicantFullName(fallbackApplicant),
+          role: "Locataire",
+          documents: files.map((file) => file.name),
+          situation: "Analyse locale utilisee",
+          housingStatus: "A confirmer",
+          monthlyIncome: 0,
+          taxNoticeIncome: 0,
+          incomeRatio: 0,
+          warnings: ["L'analyse serveur n'a pas repondu. Un compte rendu local a ete genere."]
+        }
+      ];
+      setPendingPeople(fallbackPeople);
+      setPendingReport(buildFallbackEligiaReport({
+        address,
+        rent: Number(rent),
+        applicants: [fallbackApplicant]
+      }));
+      setAnalysisProgress(100);
+      setStep("confirm");
     } finally {
       timers.forEach(window.clearTimeout);
       setBusy(false);
@@ -210,3 +236,4 @@ export function InternalDossierWizard() {
     </section>
   );
 }
+

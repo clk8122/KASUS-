@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const maxUploadFiles = 40;
-export const maxUploadBytes = 12 * 1024 * 1024;
-export const maxTotalUploadBytes = 48 * 1024 * 1024;
+export const maxUploadBytes = 50 * 1024 * 1024;
+export const maxTotalUploadBytes = 200 * 1024 * 1024;
 
 export function jsonError(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });

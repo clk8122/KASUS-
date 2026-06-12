@@ -1,4 +1,4 @@
-const maxUploadSizeMb = 20;
+const maxUploadSizeMb = 50;
 
 export type UploadValidation = {
   ok: boolean;

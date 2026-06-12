@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { EligiaAnalysisReport, EligiaMvpPerson, EligiaDocumentCheck, EligiaDocumentInventoryItem } from "@/lib/eligia-mvp";
 import { jsonError, requireSameOrigin, sanitizePositiveNumber, sanitizeText, validateUploadFiles } from "@/lib/security";
 
-const supportedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
-const supportedFileTypes = new Set(["application/pdf"]);
-
 type ResponseContent =
   | { type: "input_text"; text: string }
   | { type: "input_image"; image_url: string; detail?: "low" | "high" | "auto" }
@@ -865,12 +862,8 @@ async function fileToContent(file: File): Promise<ResponseContent[]> {
   const bytes = Buffer.from(await file.arrayBuffer());
   const base64 = bytes.toString("base64");
 
-  if (supportedImageTypes.has(file.type)) {
+  if (file.type.startsWith("image/")) {
     return [{ type: "input_image", image_url: `data:${file.type};base64,${base64}`, detail: "high" }];
-  }
-
-  if (supportedFileTypes.has(file.type)) {
-    return [{ type: "input_file", filename: file.name, file_data: `data:${file.type};base64,${base64}` }];
   }
 
   if (file.type.startsWith("text/")) {
@@ -878,7 +871,7 @@ async function fileToContent(file: File): Promise<ResponseContent[]> {
     return [{ type: "input_text", text: `Nom du fichier: ${file.name}\nContenu extrait:\n${text}` }];
   }
 
-  return [{ type: "input_text", text: `Fichier non lisible directement: ${file.name}. Utiliser le nom comme indice faible.` }];
+  return [{ type: "input_file", filename: file.name, file_data: `data:${file.type || "application/octet-stream"};base64,${base64}` }];
 }
 
 function extractOutputText(payload: {
@@ -989,9 +982,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const fileContents = (await Promise.all(files.slice(0, 20).map(fileToContent))).flat();
+    const fileContents = (await Promise.all(files.slice(0, 40).map(fileToContent))).flat();
     const fileList = files.map((file, index) => `${index + 1}. ${file.name}`).join("\n");
-    const inventory = mergeInventoryWithFileNames(files.slice(0, 20), await readDocumentInventory(files.slice(0, 20), fileContents));
+    const inventory = mergeInventoryWithFileNames(files.slice(0, 40), await readDocumentInventory(files.slice(0, 40), fileContents));
     const inventoryText = inventory.documents.length
       ? inventory.documents.map((document) => `${document.fileName}: ${document.documentType} (${Math.round(document.confidence * 100)}%) - ${document.evidenceReason}`).join("\n")
       : "Inventaire indisponible.";

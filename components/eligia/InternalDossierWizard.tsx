@@ -176,7 +176,6 @@ export function InternalDossierWizard() {
                   <Upload size={32} />
                   <strong>PDF, JPG, PNG ou HEIC</strong>
                   <input
-                    accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,application/pdf,image/jpeg,image/png,image/heic,image/heif"
                     multiple
                     onChange={(event) => {
                       const selected = Array.from(event.target.files ?? [])

@@ -409,7 +409,6 @@ export function CandidatePortalFlow() {
             <Upload size={24} />
             <strong>Téléverser les fichiers de cette personne</strong>
             <input
-              accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,application/pdf,image/jpeg,image/png,image/heic,image/heif"
               multiple
               onChange={(event) => {
                 const selected = Array.from(event.target.files ?? [])

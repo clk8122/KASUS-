@@ -1,11 +1,3 @@
-const allowedUploadMimeTypes = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/heic",
-  "image/heif"
-];
-
 const maxUploadSizeMb = 20;
 
 export type UploadValidation = {
@@ -23,10 +15,6 @@ export function sanitizeFileName(name: string) {
 }
 
 export function validateUploadFile(file: File): UploadValidation {
-  if (!allowedUploadMimeTypes.includes(file.type)) {
-    return { ok: false, message: "Format non accepte. Utilisez PDF, JPG, PNG ou HEIC." };
-  }
-
   if (file.size > maxUploadSizeMb * 1024 * 1024) {
     return { ok: false, message: `Fichier trop volumineux. Limite: ${maxUploadSizeMb} Mo.` };
   }

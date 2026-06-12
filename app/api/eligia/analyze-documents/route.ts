@@ -981,7 +981,8 @@ export async function POST(request: NextRequest) {
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json(fallback);
   }
-  if (files.length > 12 || totalUploadBytes > 15 * 1024 * 1024) {
+  if (totalUploadBytes > 50 * 1024 * 1024) {
+    console.warn(`[eligia] analyze-documents: dossier trop volumineux pour OpenAI (${Math.round(totalUploadBytes / 1024 / 1024)} Mo).`);
     return NextResponse.json(fallback);
   }
 

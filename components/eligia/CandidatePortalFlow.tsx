@@ -211,7 +211,7 @@ export function CandidatePortalFlow() {
       setProgress(item.progress);
     }, (index + 1) * 900));
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 15000);
+    const timeout = window.setTimeout(() => controller.abort(), 60000);
 
     try {
       const formData = new FormData();

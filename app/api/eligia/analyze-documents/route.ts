@@ -967,6 +967,7 @@ export async function POST(request: NextRequest) {
   const files = formData.getAll("files").filter((entry): entry is File => entry instanceof File);
   const uploadError = validateUploadFiles(files);
   if (uploadError) return jsonError(uploadError, 413);
+  const totalUploadBytes = files.reduce((sum, file) => sum + file.size, 0);
   const fallbackPeopleList = fallbackPeople(files);
   const fallback: DocumentAnalysisPayload = {
     people: fallbackPeopleList,
@@ -978,6 +979,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json(fallback);
+  }
+  if (files.length > 12 || totalUploadBytes > 15 * 1024 * 1024) {
     return NextResponse.json(fallback);
   }
 

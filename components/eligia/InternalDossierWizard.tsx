@@ -53,6 +53,8 @@ export function InternalDossierWizard() {
     const timers = loadingSteps.map((item, index) => window.setTimeout(() => {
       setAnalysisProgress(item.progress);
     }, (index + 1) * 850));
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 15000);
     try {
       const formData = new FormData();
       formData.append("address", address);
@@ -60,7 +62,8 @@ export function InternalDossierWizard() {
       files.forEach((file) => formData.append("files", file.file, file.name));
       const response = await fetch("/api/eligia/analyze-documents", {
         method: "POST",
-        body: formData
+        body: formData,
+        signal: controller.signal
       });
       if (!response.ok) {
         const failure = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -99,6 +102,7 @@ export function InternalDossierWizard() {
       setAnalysisProgress(100);
       setStep("confirm");
     } finally {
+      window.clearTimeout(timeout);
       timers.forEach(window.clearTimeout);
       setBusy(false);
     }

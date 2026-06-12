@@ -210,6 +210,8 @@ export function CandidatePortalFlow() {
     const timers = loadingSteps.map((item, index) => window.setTimeout(() => {
       setProgress(item.progress);
     }, (index + 1) * 900));
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 15000);
 
     try {
       const formData = new FormData();
@@ -221,7 +223,8 @@ export function CandidatePortalFlow() {
 
       const response = await fetch("/api/eligia/analyze-documents", {
         method: "POST",
-        body: formData
+        body: formData,
+        signal: controller.signal
       });
       if (!response.ok) {
         const failure = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -251,6 +254,7 @@ export function CandidatePortalFlow() {
       setProgress(100);
       patchState({ step: "contact" });
     } finally {
+      window.clearTimeout(timeout);
       timers.forEach(window.clearTimeout);
     }
   }

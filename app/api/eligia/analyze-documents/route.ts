@@ -1108,8 +1108,9 @@ export async function POST(request: NextRequest) {
 
     const payload = await response.json();
     const parsed = JSON.parse(extractOutputText(payload)) as DocumentAnalysisPayload;
-    const inventoryChecklist = inventory.documents.length ? inventoryToChecklist(inventory.documents, parsed.people) : [];
-    const checkedList = hardValidateChecklist(inventoryChecklist.length ? inventoryChecklist : parsed.report.documentChecklist ?? [], parsed.people);
+    const analyzedPeople = parsed.people.length ? parsed.people : fallbackPeople(files);
+    const inventoryChecklist = inventory.documents.length ? inventoryToChecklist(inventory.documents, analyzedPeople) : [];
+    const checkedList = hardValidateChecklist(inventoryChecklist.length ? inventoryChecklist : parsed.report.documentChecklist ?? [], analyzedPeople);
     const checkedReport = sanitizeReportTaxIncomeStrict(
       alignReportWithChecklist(
         syncReportWithChecklist({ ...parsed.report, source: "openai", documentInventory: inventory.documents }, checkedList),
@@ -1117,7 +1118,7 @@ export async function POST(request: NextRequest) {
       ),
       inventory.documents
     );
-    const sanitizedPeople = sanitizePeopleTaxIncomeStrict(parsed.people, inventory.documents);
+    const sanitizedPeople = sanitizePeopleTaxIncomeStrict(analyzedPeople, inventory.documents);
     const finalPayload = removeFalseChronologyWarnings({
       people: sanitizedPeople.map((person, index) => ({
         ...person,

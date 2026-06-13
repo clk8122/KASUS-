@@ -194,8 +194,8 @@ export function CandidatePortalFlow() {
   function checkBeforeSubmit() {
     const pending = buildMissingDocuments(state.applicants);
     setMissing(pending);
-    patchState({ step: pending.length ? "missing" : "analysis" });
-    if (!pending.length) void runDocumentAnalysis([]);
+    patchState({ step: "analysis" });
+    void runDocumentAnalysis(pending);
   }
 
   async function runDocumentAnalysis(currentMissing: string[]) {
@@ -499,6 +499,9 @@ export function CandidatePortalFlow() {
       {state.step === "result" ? (
         <div className="candidate-question">
           <span className={(analysisReport?.score ?? localAnalysis.solvencyScore) >= 58 ? "badge badge-green" : "badge badge-red"}>{analysisReport?.label ?? localAnalysis.solvencyLabel}</span>
+          <p className="microcopy">
+            {analysisReport?.source === "openai" ? "Analyse IA OpenAI" : "Analyse de secours locale"}
+          </p>
           <h2>{(analysisReport?.score ?? localAnalysis.solvencyScore) >= 58 ? "Votre dossier a été transmis à l'agence" : "Votre dossier semble insuffisant"}</h2>
           {(analysisReport?.score ?? localAnalysis.solvencyScore) < 58 ? <p>Selon les pièces transmises, votre dossier ne semble pas atteindre les critères attendus. L'agence garde la décision finale.</p> : null}
           <p>L'agence vous contactera au plus vite. Ce lien est maintenant finalisé.</p>

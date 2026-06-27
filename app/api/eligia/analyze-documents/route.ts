@@ -978,16 +978,26 @@ export async function POST(request: NextRequest) {
     report: buildFallbackReport(address, rent, files, fallbackPeopleList)
   };
 
+  // L'analyse IA peut échouer pour plusieurs raisons. Plutôt que de renvoyer
+  // silencieusement le repli local (ce qui donne l'impression que "l'analyse ne
+  // marche plus"), on attache la raison au rapport et à un en-tête de réponse.
+  const respondFallback = (reason: string) =>
+    NextResponse.json(
+      { ...fallback, report: { ...fallback.report, fallbackReason: reason } },
+      { headers: { "x-eligia-analysis": "local", "x-eligia-fallback-reason": reason } }
+    );
+
   if (!files.length) {
-    return NextResponse.json(fallback);
+    return respondFallback("Aucun fichier reçu : rien à analyser.");
   }
 
   if (!process.env.OPENAI_API_KEY) {
-    return NextResponse.json(fallback);
+    console.warn("[eligia] analyze-documents: OPENAI_API_KEY absente côté serveur, repli sur l'analyse locale.");
+    return respondFallback("Clé OpenAI (OPENAI_API_KEY) absente côté serveur : configure-la dans les variables d'environnement de production.");
   }
   if (totalUploadBytes > 50 * 1024 * 1024) {
     console.warn(`[eligia] analyze-documents: dossier trop volumineux pour OpenAI (${Math.round(totalUploadBytes / 1024 / 1024)} Mo).`);
-    return NextResponse.json(fallback);
+    return respondFallback(`Dossier trop volumineux pour l'analyse IA (${Math.round(totalUploadBytes / 1024 / 1024)} Mo, limite 50 Mo).`);
   }
 
   try {
@@ -1116,7 +1126,7 @@ export async function POST(request: NextRequest) {
             await sleep(800);
             continue;
           }
-          return NextResponse.json(fallback);
+          return respondFallback(`Service OpenAI indisponible (HTTP ${response.status}) après nouvelle tentative.`);
         }
 
         const payload = await response.json();
@@ -1147,13 +1157,13 @@ export async function POST(request: NextRequest) {
           await sleep(800);
           continue;
         }
-        return NextResponse.json(fallback);
+        return respondFallback(`Analyse IA en échec : ${error instanceof Error ? error.message : "erreur inconnue"}.`);
       }
     }
     console.warn("[eligia] analyze-documents: echec IA apres retry.", lastError);
-    return NextResponse.json(fallback);
+    return respondFallback(`Analyse IA en échec après nouvelle tentative : ${lastError instanceof Error ? lastError.message : "erreur inconnue"}.`);
   } catch (error) {
     console.warn("[eligia] analyze-documents: analyse IA indisponible, repli sur l'analyse locale.", error);
-    return NextResponse.json(fallback);
+    return respondFallback(`Analyse IA indisponible : ${error instanceof Error ? error.message : "erreur inconnue"}.`);
   }
 }

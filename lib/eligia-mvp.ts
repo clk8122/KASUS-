@@ -50,6 +50,8 @@ export type EligiaAnalysisReport = {
   riskPoints: string[];
   recommendation: string;
   source: "openai" | "local";
+  /** Renseigné uniquement quand source === "local" : explique pourquoi l'analyse IA n'a pas pu s'exécuter. */
+  fallbackReason?: string;
 };
 
 export type EligiaMvpDossier = {
